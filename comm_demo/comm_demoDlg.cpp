@@ -258,19 +258,17 @@ HCURSOR Ccomm_demoDlg::OnQueryDragIcon()
 
 void Ccomm_demoDlg::app_init_para(void)
 {
-	hCom = INVALID_HANDLE_VALUE;
 	sampleRate = 50;
 	protocol_type = USB_I2C;
 	sensor_type = QST_SENSOR_NONE;
-	mChartInit = FALSE;
+	//mChartInit = FALSE;
 	log_flag = FALSE;
 	edit_slave = 0x00;
 
-	master_type = DEVICE_CP2102;
+	master_type = DEVICE_NONE;
 	master_connect = FALSE;
 	master_start = FALSE;
 	master_status = FALSE;
-	hCom = INVALID_HANDLE_VALUE;
 
 	InitBtwzFilter();
 	master_type = i2c_spi_open_device();
@@ -330,6 +328,10 @@ void Ccomm_demoDlg::app_refresh_ui(int type)
 			GetDlgItem(IDC_EDIT_PORT)->SetWindowTextW(_T(" CH341A"));
 		else if(master_type == DEVICE_STM32F103)
 			GetDlgItem(IDC_EDIT_PORT)->SetWindowTextW(_T(" STM32"));
+		GetDlgItem(IDC_EDIT_PORT)->EnableWindow(0);
+	}
+	else if(master_type == DEVICE_CP2102)
+	{
 		GetDlgItem(IDC_EDIT_PORT)->EnableWindow(0);
 	}
 	else
@@ -560,14 +562,14 @@ void Ccomm_demoDlg::app_data_update(void)
 		if(log_flag)
 		{
 			memset(str_buf, 0, sizeof(str_buf));
-			sprintf_s(str_buf, "QMC:	%f	%f	%f \r\n", sensor_data[0],sensor_data[1],sensor_data[2]);
+			sprintf_s(str_buf, "QMC:	%f	%f	%f \r\n", sensor_data[3],sensor_data[4],sensor_data[5]);
 			log_file.Write(str_buf, strlen(str_buf));
 		}
 		sRawData.Empty();
 		if(mag_accuracy == 3)
-			sRawData.Format(L"Magnetic(Cali):\n x: %f\n y: %f \n z: %f", sensor_data[0],sensor_data[1],sensor_data[2]);
+			sRawData.Format(L"Magnetic(Cali):\n x: %f\n y: %f \n z: %f", sensor_data[3],sensor_data[4],sensor_data[5]);
 		else
-			sRawData.Format(L"Magnetic(not Cali):\n x: %f\n y: %f \n z: %f \n", sensor_data[0], sensor_data[1], sensor_data[2]);
+			sRawData.Format(L"Magnetic(not Cali):\n x: %f\n y: %f \n z: %f \n", sensor_data[3],sensor_data[4],sensor_data[5]);
 			
 		pRawDataEdit = (CStatic*)GetDlgItem(IDC_STATIC_MAGDATA);
 		pRawDataEdit->SetWindowTextW(sRawData.GetBuffer(sRawData.GetLength()));
@@ -585,12 +587,12 @@ void Ccomm_demoDlg::app_data_update(void)
 		if(log_flag)
 		{
 			memset(str_buf, 0, sizeof(str_buf));
-			sprintf_s(str_buf, "Gyro:	%f	%f	%f \r\n", sensor_data[0],sensor_data[1],sensor_data[2]);
+			sprintf_s(str_buf, "Gyro:	%f	%f	%f \r\n", sensor_data[6],sensor_data[7],sensor_data[8]);
 			log_file.Write(str_buf, strlen(str_buf));
 		}
 		sRawData.Empty();
 		//sRawData.Format(L"ÍÓÂÝÒÇ:\n x: %f\n y: %f \n z: %f \n", gyro_xyz[0]*PI/180,gyro_xyz[1]*PI/180,gyro_xyz[2]*PI/180);
-		sRawData.Format(L"Gyroscope:\n x: %f\n y: %f \n z: %f \n", sensor_data[0],sensor_data[1],sensor_data[2]);
+		sRawData.Format(L"Gyroscope:\n x: %f\n y: %f \n z: %f \n", sensor_data[6],sensor_data[7],sensor_data[8]);
 		pRawDataEdit = (CStatic*)GetDlgItem(IDC_STATIC_PRESSDATA);
 		pRawDataEdit->SetWindowTextW(sRawData.GetBuffer(sRawData.GetLength()));
 	}
@@ -615,7 +617,8 @@ void Ccomm_demoDlg::app_data_update(void)
 		if(log_flag)
 		{
 			memset(str_buf, 0, sizeof(str_buf));
-			sprintf_s(str_buf, "%f	%f	%f	%f	%f	%f \r\n",sensor_data[0],sensor_data[1],sensor_data[2],sensor_data[3],sensor_data[4],sensor_data[5]);
+			sprintf_s(str_buf, "%f	%f	%f	%f	%f	%f \r\n",sensor_data[0],sensor_data[1],sensor_data[2],
+															sensor_data[6],sensor_data[7],sensor_data[8]);
 			log_file.Write(str_buf, strlen(str_buf));
 		}
 		sRawData.Empty();
@@ -623,7 +626,7 @@ void Ccomm_demoDlg::app_data_update(void)
 		pRawDataEdit = (CStatic*)GetDlgItem(IDC_STATIC_ACCDATA);
 		pRawDataEdit->SetWindowTextW(sRawData.GetString());
 		sRawData.Empty();
-		sRawData.Format(L"Gyroscope:\n x: %f\n y: %f \n z: %f \n", sensor_data[3],sensor_data[4],sensor_data[5]);
+		sRawData.Format(L"Gyroscope:\n x: %f\n y: %f \n z: %f \n", sensor_data[6],sensor_data[7],sensor_data[8]);
 		pRawDataEdit = (CStatic*)GetDlgItem(IDC_STATIC_PRESSDATA);
 		pRawDataEdit->SetWindowTextW(sRawData.GetBuffer(sRawData.GetLength()));
 	}
@@ -668,7 +671,6 @@ void Ccomm_demoDlg::enum_com_port(void)
 		}
 	}
 }
-*/
 
 BOOL Ccomm_demoDlg::open_comm(int prot)
 {
@@ -763,6 +765,7 @@ BOOL Ccomm_demoDlg::open_comm(int prot)
 		return TRUE;
 	}
 }
+*/
 
 
 void Ccomm_demoDlg::app_exit(void)
@@ -772,6 +775,8 @@ void Ccomm_demoDlg::app_exit(void)
 	master_start = FALSE;
 	KillTimer(SENSOR_TIMER_ID_1);
 	i2c_spi_close_device();
+	com_close_device();
+	app_init_para();
 	app_refresh_ui(QST_SENSOR_NONE);
 	app_close_file();
 }
@@ -821,16 +826,28 @@ void Ccomm_demoDlg::OnBnClickedBtOpenDevice()
 
 	if(master_connect == FALSE)
 	{
-		if(IsDlgButtonChecked(IDC_CHECK_PROTOCOL))
+		if((master_type==DEVICE_CH341A)||(master_type==DEVICE_STM32F103))
 		{
-			protocol_type = USB_SPI;
-			master_connect = spi_init(master_type, 6*1000*1000, 3);
+			if(IsDlgButtonChecked(IDC_CHECK_PROTOCOL))
+			{
+				protocol_type = USB_SPI;
+				master_connect = spi_init(master_type, 6*1000*1000, 3);
+			}
+			else
+			{
+				protocol_type = USB_I2C;
+				master_connect = i2c_init(master_type, 400*1000);
+			}
 		}
-		else
+		else if((master_type == DEVICE_NONE)||(master_type == DEVICE_CP2102))
 		{
-			protocol_type = USB_I2C;
-			master_connect = i2c_init(master_type, 400*1000);
+			master_type = com_open_device(mComNum);
+			if(master_type==DEVICE_CP2102)
+			{
+				master_connect = TRUE;
+			}
 		}
+
 		app_refresh_ui(sensor_type);
 	}
 	else		// close port
@@ -952,6 +969,7 @@ BOOL Ccomm_demoDlg::OnDeviceChange(UINT nEventType, DWORD dwData)
 	}
 
 	i2c_spi_close_device();
+	com_close_device();
 	app_init_para();
 	app_refresh_ui(sensor_type);
 
@@ -969,14 +987,14 @@ void Ccomm_demoDlg::OnTimer(UINT_PTR nIDEvent)
 		{
 			if(acc_type == QST_ACCEL_QMAX981)
 			{
-				qmaX981_read_xyz(sensor_data);
+				qmaX981_read_xyz(&sensor_data[0]);
 	#if defined(QMAX981_STEPCOUNTER)
 				step = qmaX981_read_stepcounter();
 	#endif
 			}
 			else if(acc_type == QST_ACCEL_QMA6100)
 			{
-				qma6100_read_acc_xyz(sensor_data);
+				qma6100_read_acc_xyz(&sensor_data[0]);
 	#if defined(QMA6100_STEPCOUNTER)
 				step = qma6100_read_stepcounter();
 	#endif
@@ -988,11 +1006,11 @@ void Ccomm_demoDlg::OnTimer(UINT_PTR nIDEvent)
 		{
 			if(mag_type == QST_MAG_QMC7983)
 			{
-				qmcX983_read_mag_xyz(&sensor_data[0]);
+				qmcX983_read_mag_xyz(&sensor_data[3]);
 			}
 			else if(mag_type == QST_MAG_QMC6308)
 			{
-				qmc6308_read_mag_xyz(&sensor_data[0]);
+				qmc6308_read_mag_xyz(&sensor_data[3]);
 			}
 		}
 #endif
@@ -1012,11 +1030,11 @@ void Ccomm_demoDlg::OnTimer(UINT_PTR nIDEvent)
 		{
 			if(accgyro_type == QST_ACCGYRO_QMI8610)
 			{
-				qmi8610_read_xyz(&sensor_data[3], &sensor_data[0], NULL);
+				qmi8610_read_xyz(&sensor_data[6], &sensor_data[0], NULL);
 			}
 			else if(accgyro_type == QST_ACCGYRO_QMI8658)
 			{
-				Qmi8658_read_xyz(&sensor_data[3], &sensor_data[0], NULL);
+				Qmi8658_read_xyz(&sensor_data[6], &sensor_data[0], NULL);
 			}
 		}
 #endif

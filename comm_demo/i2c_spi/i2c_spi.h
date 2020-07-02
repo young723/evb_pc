@@ -27,16 +27,22 @@ typedef struct
 	int				protocol;
 	int				device;
 	//unsigned char slave;
-	BOOL			open;
+	BOOL			usb_open;
 	UINT			mCh341Index;
 	HANDLE			mCh341Handle;	
 	UINT			mStm32Index;
+	// cp2102 com port
+	BOOL			com_open;
+	HANDLE			hCom;
+	// cp2102 com port 
 	unsigned char	buf[64];
 }i2c_spi_t;
 
 
 int i2c_spi_open_device(void);
 BOOL i2c_spi_close_device(void);
+int com_open_device(int com_num);
+int com_close_device(void);
 BOOL i2c_init(int device, int rate);
 BOOL spi_init(int device, int rate, int mode);
 BOOL i2c_write_reg(unsigned char slave, unsigned char addr, unsigned char value);

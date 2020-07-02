@@ -498,10 +498,10 @@ void qmp6988_calc_pressure(qmp6988_data *qmp6988, float* temperature, float* pre
 	Tr = a0 + a1*T_raw + a2*T_raw*T_raw;
 	//Unit centigrade
 	if(temperature)
-		*temperature = Tr / 256.0f;
+		*temperature = (float)(Tr / 256.0f);
 	//compensation pressure, Unit Pa
 	if(pressure)
-		*pressure = b00+bt1*Tr+bp1*P_raw+b11*Tr*P_raw+bt2*Tr*Tr+bp2*P_raw*P_raw+b12*P_raw*Tr*Tr+b21*P_raw*P_raw*Tr+bp3*P_raw*P_raw*P_raw;
+		*pressure = (float)(b00+bt1*Tr+bp1*P_raw+b11*Tr*P_raw+bt2*Tr*Tr+bp2*P_raw*P_raw+b12*P_raw*Tr*Tr+b21*P_raw*P_raw*Tr+bp3*P_raw*P_raw*P_raw);
 #endif	
 }
 

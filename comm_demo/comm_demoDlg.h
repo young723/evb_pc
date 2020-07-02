@@ -45,9 +45,7 @@
 #define QST_ACCELEMRTER_SUPPORT
 //#define QST_MAGNETIC_SUPPORT
 //#define QST_PRESSURE_SUPPORT
-#define QST_ACCGYRO_SUPPORT
-//#define QST_CHART_HIDE
-
+//#define QST_ACCGYRO_SUPPORT
 
 typedef struct
 {
@@ -187,7 +185,7 @@ protected:
 public:
 	afx_msg void OnBnClickedBtOpenDevice();
 	afx_msg void OnBnClickedOk();
-	BOOL open_comm(int prot);
+	//BOOL open_comm(int prot);
 
 	void app_init_para(void);
 	void app_init_ui(void);
@@ -204,6 +202,7 @@ public:
 private:
 	int				sampleRate;
 	int				mag_accuracy;
+ 	int			 	mComNum;
 	//sensor_vec_t	out_data;
 	float			sensor_data[10];
 	unsigned int	step;
@@ -229,12 +228,7 @@ private:
 	BOOL			master_status;
 	BOOL			master_connect;
 	BOOL			master_start;
- 
-	// cp2102 com port
-	HANDLE			hCom;
-	DCB				dcb;	
-	int				mComNum;
-	// cp2102 com port 
+
 	// draw chart
 	CChartCtrl m_ChartCtrl;
 	CChartCtrl m_ChartCtrl_2;
