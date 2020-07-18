@@ -1,5 +1,7 @@
-#ifndef I2C_SPI_H
-#define I2C_SPI_H
+#ifndef USB_DEVICE_H
+#define USB_DEVICE_H
+
+#include "conio.h"
 #include "USBIOX.H"
 #include "USB2UARTSPIIICDLL.h"
 
@@ -21,6 +23,7 @@ enum
 	DEVICE_MAX,
 };
 
+typedef void (*irq_callback)(void);
 
 typedef struct
 {
@@ -35,21 +38,26 @@ typedef struct
 	BOOL			com_open;
 	HANDLE			hCom;
 	// cp2102 com port 
+	irq_callback	irq1_func;
+
 	unsigned char	buf[64];
-}i2c_spi_t;
+}usb_device_t;
 
 
-int i2c_spi_open_device(void);
-BOOL i2c_spi_close_device(void);
+int get_device_protocol(void);
+int usb_open_device(void);
+BOOL usb_close_device(void);
 int com_open_device(int com_num);
 int com_close_device(void);
 BOOL i2c_init(int device, int rate);
-BOOL spi_init(int device, int rate, int mode);
+BOOL spi_init(int device, unsigned int mode);
+void spi_config(unsigned int rate, unsigned int mode);
+
 BOOL i2c_write_reg(unsigned char slave, unsigned char addr, unsigned char value);
 BOOL i2c_read_reg(unsigned char slave, unsigned char addr, unsigned char *buf, unsigned short len);
 BOOL spi_write_reg(unsigned char addr, unsigned char value);
 BOOL spi_read_reg(unsigned char addr, unsigned char *buf, unsigned short len);
-int get_i2c_spi_protocol(void);
 BOOL device_write_io(unsigned char value);
+void device_register_irq(irq_callback irq_fun);
 
 #endif

@@ -76,7 +76,7 @@ unsigned char qmcX983_WriteReg(unsigned char reg_add,unsigned char reg_dat)
 
 	while((!ret) && (retry++ < 5))
 	{
-		if(get_i2c_spi_protocol() == USB_SPI)
+		if(get_device_protocol() == USB_SPI)
 		{
 			ret = spi_write_reg(reg_add, reg_dat);
 		}
@@ -102,7 +102,7 @@ unsigned char qmcX983_ReadData(unsigned char reg_add,unsigned char* Read, unsign
 
 	while((!ret) && (retry++ < 5))
 	{
-		if(get_i2c_spi_protocol() == USB_SPI)
+		if(get_device_protocol() == USB_SPI)
 		{
 			ret = spi_read_reg(reg_add, Read, num);
 		}

@@ -6,14 +6,14 @@
 static unsigned char qmc6308_chipid = 0;
 static unsigned char	qmc6308_addr = QMC6308_IIC_ADDR;
 
-static unsigned char qmc6308_read_block(unsigned char addr, unsigned char *data, unsigned char len)
+int qmc6308_read_block(unsigned char addr, unsigned char *data, unsigned char len)
 {
 	int ret = 0;
 	unsigned int retry = 0;
 
 	while((!ret) && (retry++ < 5))
 	{
-		if(get_i2c_spi_protocol() == USB_SPI)
+		if(get_device_protocol() == USB_SPI)
 		{
 			ret = spi_read_reg(addr, data, len);
 		}
@@ -26,14 +26,14 @@ static unsigned char qmc6308_read_block(unsigned char addr, unsigned char *data,
 	return ret;
 }
 
-static unsigned char qmc6308_write_reg(unsigned char addr, unsigned char data)
+int qmc6308_write_reg(unsigned char addr, unsigned char data)
 {
 	unsigned char ret = 0;
 	unsigned int retry = 0;
 
 	while((!ret) && (retry++ < 5))
 	{
-		if(get_i2c_spi_protocol() == USB_SPI)
+		if(get_device_protocol() == USB_SPI)
 		{
 			ret = spi_write_reg(addr, data);
 		}
@@ -152,7 +152,7 @@ int qmc6308_get_chipid(void)
 	{
 		return 0;
 	}
-	if((qmc6308_chipid & 0xf0)==0)
+	if((qmc6308_chipid == 0xff)||(qmc6308_chipid & 0xf0)==0)
 	{
 		return 0;
 	}
@@ -179,7 +179,7 @@ static int qmc6310_get_chipid(void)
 	{
 		return 0;
 	}
-	if((qmc6308_chipid & 0xf0)==0)
+	if((qmc6308_chipid == 0xff)||(qmc6308_chipid & 0x80)==0)
 	{
 		return 0;
 	}

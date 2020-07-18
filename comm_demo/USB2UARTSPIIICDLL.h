@@ -73,7 +73,7 @@ UsbIndex:
 //IO口
 /****************************************************************************
 名称：OpenUsb                           
-参数：无                                
+参数：UsbIndex USB索引(0-9)                               
 返回值：TRUE    打开转接板USB成功 
         FALSH   打开转接板USB失败
 功能：打开转接板USB
@@ -83,7 +83,7 @@ USB2UARTSPIIICDLL_API BOOL OpenUsb(int UsbIndex);
 
 /****************************************************************************
 名称：CloseUSB                            
-参数：UsbIndex USB索引                                
+参数：UsbIndex USB索引(0-9)                                
 返回值：TRUE    关闭转接板USB成功 
         FALSH   关闭转接板USB失败
 功能：关闭转接板USB
@@ -225,6 +225,23 @@ USB2UARTSPIIICDLL_API int UARTRcvData(unsigned char *rcvBuf, unsigned int len,in
 功能：SPI 主模式下发送数据 
 ****************************************************************************/
 USB2UARTSPIIICDLL_API BOOL SPISendData(unsigned int startCS, unsigned int endCS,unsigned char *sendBuf, unsigned int len,int UsbIndex);
+
+/****************************************************************************
+名称：SPISendAndRecData                     
+参数：startCS   发送数据前CS管脚的电平
+                0：低电平
+                1：高电平
+      endCS     发送数据后CS管脚的电平
+                0：低电平
+                1：高电平
+      sndBuf    要发送数据的缓存
+	  rcvBuf    要接收数据的缓存
+      len       要发送数据的长度（最大4096）
+返回值：TRUE    发送成功  
+        FALSH   发送失败
+功能：SPI 主模式下发送和接收数据 
+****************************************************************************/
+USB2UARTSPIIICDLL_API BOOL SPISendAndRecData(unsigned int startCS, unsigned int endCS,unsigned char *sendBuf,unsigned char *rcvBuf,unsigned int len,int UsbIndex);
 
 /****************************************************************************
 名称：SPIRcvData                         

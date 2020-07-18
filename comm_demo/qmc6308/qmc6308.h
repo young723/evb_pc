@@ -1,7 +1,7 @@
 #ifndef __QMC6308_H
 #define __QMC6308_H
 
-#include "i2c_spi.h"
+#include "usb_device.h"
 #include <string.h>
 #include <stdio.h>
 #include "conio.h"
@@ -61,6 +61,8 @@ typedef struct{
 	unsigned char map[3];
 } qmc6308_map;
 
+int qmc6308_write_reg(unsigned char addr, unsigned char data);
+int qmc6308_read_block(unsigned char addr, unsigned char *data, unsigned char len);
 int qmc6308_init(void);
 int qmc6308_read_mag_xyz(float *data);
 

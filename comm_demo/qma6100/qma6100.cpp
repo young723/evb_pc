@@ -61,7 +61,7 @@ qs32 qma6100_writereg(qu8 reg_add,qu8 reg_dat)
 
 	while((ret==QMA6100_FAIL) && (retry++ < 5))
 	{
-		if(get_i2c_spi_protocol() == USB_SPI)
+		if(get_device_protocol() == USB_SPI)
 		{
 			ret = spi_write_reg(reg_add&0x7f, reg_dat);
 		}
@@ -83,7 +83,7 @@ qs32 qma6100_readreg(qu8 reg_add,qu8 *buf,qu16 num)
 
 	while((ret==QMA6100_FAIL) && (retry++ < 5))
 	{
-		if(get_i2c_spi_protocol() == USB_SPI)
+		if(get_device_protocol() == USB_SPI)
 		{
 			ret = spi_read_reg(reg_add|0x80, buf, num);
 		}
@@ -96,6 +96,11 @@ qs32 qma6100_readreg(qu8 reg_add,qu8 *buf,qu16 num)
 		return QMA6100_SUCCESS;
 	else
 		return QMA6100_FAIL;
+}
+
+qu8 qma6100_get_slave(void)
+{
+	return g_qma6100.slave;
 }
 
 qu8 qma6100_chip_id(void)
@@ -841,7 +846,7 @@ void qma6100_irq_hdlr(void)
 	}
 	else
 	{
-		//QMA6100_LOG("irq [0x%x 0x%x 0x%x 0x%x]\n", databuf[0],databuf[1],databuf[2],databuf[3]);
+		QMA6100_LOG("irq [0x%x 0x%x 0x%x 0x%x] @ ", databuf[0],databuf[1],databuf[2],databuf[3]);
 	}
 
 #if defined(QMA6100_DATA_READY)
@@ -1053,8 +1058,7 @@ static qs32 qma6100_initialize(void)
 	qma6100_writereg(0x56, 0x01);
 #else
 	// config by peili
-	qma6100_set_mode_odr(QMA6100_MODE_ACTIVE, QMA6100_MCLK_50K, QMA6100_DIV_512, QMA6100_LPF_16);
-	//qma6100_set_mode_odr(QMA6100_MODE_ACTIVE, QMA6100_MCLK_500K, QMA6100_DIV_2048, QMA6100_LPF_16);
+	qma6100_set_mode_odr(QMA6100_MODE_ACTIVE, QMA6100_MCLK_50K, QMA6100_DIV_512, QMA6100_LPF_0);
 	qma6100_set_range(QMA6100_RANGE_8G);
 	qma6100_writereg(0x4a, 0x20);
 	qma6100_writereg(0x50, 0x49);

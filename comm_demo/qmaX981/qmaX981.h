@@ -2,7 +2,7 @@
 #define __QMAX981_H
 
 
-#include "i2c_spi.h"
+#include "usb_device.h"
 #include <string.h>
 #include <stdio.h>
 #include "conio.h"
@@ -28,10 +28,10 @@ typedef		double					qd64;
 //#define QMAX981_SIGNIFICANT_STEP_INT
 //#define QMAX981_FIFO_FUNC
 //#define QMAX981_DATA_READY
-//#define QMAX981_ANY_MOTION
+#define QMAX981_ANY_MOTION
 //#define QMAX981_NO_MOTION
 //#define QMAX981_SIGNIFICANT_MOTION
-#define QMAX981_INT_LATCH
+//#define QMAX981_INT_LATCH
 
 #define QMA7981_DEVICE_ID		    0xe7
 #define QMA7981_DEVICE_ID2		    0xe9
@@ -142,6 +142,9 @@ typedef enum
 }qmaX981_div;
 
 
+extern qs32 qmaX981_writereg(qu8 reg_add, qu8 reg_dat);
+extern qs32 qmaX981_readreg(qu8 reg_add, qu8 *buf, qu16 num);
+extern qu8 qmaX981_get_slave(void);
 extern qs8 qmaX981_init(void);
 extern qs8 qmaX981_read_xyz(float *accData);
 extern qs32 qmaX981_read_raw(qs32 *rawData);

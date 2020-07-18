@@ -50,7 +50,7 @@ QMP6988_U8_t qmp6988_WriteReg(QMP6988_U8_t slave, QMP6988_U8_t reg_add,QMP6988_U
 
 	while((!ret) && (retry++ < 5))
 	{
-		if(get_i2c_spi_protocol() == USB_SPI)
+		if(get_device_protocol() == USB_SPI)
 		{
 			ret = spi_write_reg(reg_add, reg_dat);
 		}
@@ -70,7 +70,7 @@ QMP6988_U8_t qmp6988_ReadData(QMP6988_U8_t slave, QMP6988_U8_t reg_add,unsigned 
 
 	while((!ret) && (retry++ < 5))
 	{
-		if(get_i2c_spi_protocol() == USB_SPI)
+		if(get_device_protocol() == USB_SPI)
 		{
 			ret = spi_read_reg(reg_add, Read, num);
 		}

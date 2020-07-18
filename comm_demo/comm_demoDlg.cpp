@@ -9,6 +9,8 @@
 #define new DEBUG_NEW
 #endif
 
+#if 0
+
 #if defined(MAG_CALI_SUPPORT)
 #pragma comment(lib, "mag_calibration_lib.lib")
 extern "C" struct mag_lib_interface_t MAG_LIB_API_INTERFACE;
@@ -28,6 +30,7 @@ static unsigned char mag_cali_flag=0;
 static short mag_ofsx=0,mag_ofsy=0,mag_ofsz=0,Mag_AvgR=0;
 #endif
 
+#endif
 
 //#ifdef _DEBUG
 #define DEBUG_CONSOLE
@@ -38,30 +41,6 @@ static short mag_ofsx=0,mag_ofsy=0,mag_ofsz=0,Mag_AvgR=0;
 #define QST_PRINTF
 #endif
 
-
-static SYSTEMTIME	qst_time;
-
-VOID CALLBACK ch341_qma7981_callback(ULONG iStatus)
-{
-#if 0
-	if(LoadLibrary(L"USBIOX.DLL") == NULL )
-	{
-		QST_PRINTF( "USBIOX.DLL not found !!!\n" );
-	}
-	else
-	{
-		QST_PRINTF( "USBIOX.DLL OK !!!\n" );
-	}
-#endif
-
-}
-
-int64_t qst_time_in_nanosec(void) 
-{
-	SYSTEMTIME sys;
-	GetLocalTime(&sys);
-	return (sys.wSecond * 1000LL + sys.wMilliseconds) * 1000000LL;
-}
 
 #ifdef DEBUG_CONSOLE
 static BOOL console_flag = FALSE;
@@ -91,6 +70,50 @@ static void CloseConsoleWindow()
 }
 #endif
 
+/*
+int64_t qst_time_in_nanosec(void) 
+{
+	SYSTEMTIME sys;
+	GetLocalTime(&sys);
+	return (sys.wSecond * 1000LL + sys.wMilliseconds) * 1000000LL;
+}
+*/
+
+/*
+unsigned char qmaX981_reg_data[][6] = 
+{
+	{0x00,0x01,0x9e,0xfe,0x7c,0x12},
+
+};
+
+int qmaX981_calc_raw(void)
+{
+	unsigned char databuf[6] = { 0 };
+	int rawData[3];
+	int len = (sizeof(qmaX981_reg_data) / (sizeof(unsigned char) * 6));
+	int i;
+
+	for (i = 0; i < len; i++)
+	{
+		databuf[0] = qmaX981_reg_data[i][0];
+		databuf[1] = qmaX981_reg_data[i][1];
+		databuf[2] = qmaX981_reg_data[i][2];
+		databuf[3] = qmaX981_reg_data[i][3];
+		databuf[4] = qmaX981_reg_data[i][4];
+		databuf[5] = qmaX981_reg_data[i][5];
+
+		rawData[0] = (short)(((unsigned short)databuf[1] << 8) | (databuf[0]));
+		rawData[1] = (short)(((unsigned short)databuf[3] << 8) | (databuf[2]));
+		rawData[2] = (short)(((unsigned short)databuf[5] << 8) | (databuf[4]));
+		rawData[0] = rawData[0] >> 2;
+		rawData[1] = rawData[1] >> 2;
+		rawData[2] = rawData[2] >> 2;
+		QST_PRINTF("	raw:	%d	%d	%d\n", rawData[0], rawData[1], rawData[2]);
+	}
+
+	return QMAX981_SUCCESS;
+}
+*/
 
 class CAboutDlg : public CDialog
 {
@@ -152,7 +175,6 @@ BEGIN_MESSAGE_MAP(Ccomm_demoDlg, CDialog)
 	ON_WM_CTLCOLOR()
 	ON_BN_CLICKED(IDC_BUTTON_REG_WRITE, &Ccomm_demoDlg::OnBnClickedButtonRegWrite)
 	ON_BN_CLICKED(IDC_BUTTON_REG_READ, &Ccomm_demoDlg::OnBnClickedButtonRegRead)
-	ON_BN_CLICKED(IDC_BUTTON_CIC, &Ccomm_demoDlg::OnBnClickedButtonCic)
 	ON_EN_CHANGE(IDC_EDIT_SLAVE, &Ccomm_demoDlg::OnEnChangeEditSlave)
 	//ON_CBN_SELCHANGE(IDC_COMBO_COM_LIST, &Ccomm_demoDlg::OnCbnSelchangeComboComList)
 	ON_BN_CLICKED(IDC_BUTTON_CALI, &Ccomm_demoDlg::OnBnClickedButtonCali)
@@ -196,13 +218,14 @@ BOOL Ccomm_demoDlg::OnInitDialog()
 	InitConsoleWindow();
 #endif
 	app_init_para();
+	master_type = usb_open_device();
+	usb_close_device();
 	app_chart_init();
 	app_refresh_ui(QST_SENSOR_NONE);
 
 #if defined(MAG_CALI_SUPPORT)
 	MAG_LIB_API_INTERFACE.initLib(&qmcInfo);
 #endif
-
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -261,9 +284,10 @@ void Ccomm_demoDlg::app_init_para(void)
 	sampleRate = 50;
 	protocol_type = USB_I2C;
 	sensor_type = QST_SENSOR_NONE;
-	//mChartInit = FALSE;
+	mChartInit = FALSE;
 	log_flag = FALSE;
 	edit_slave = 0x00;
+	step = 0;
 
 	master_type = DEVICE_NONE;
 	master_connect = FALSE;
@@ -271,7 +295,15 @@ void Ccomm_demoDlg::app_init_para(void)
 	master_status = FALSE;
 
 	InitBtwzFilter();
-	master_type = i2c_spi_open_device();
+}
+
+void Ccomm_demoDlg::app_reset_para(void)
+{
+	sensor_type = QST_SENSOR_NONE;
+
+	master_connect = FALSE;
+	master_start = FALSE;
+	master_status = FALSE;
 }
 
 void Ccomm_demoDlg::app_init_ui(void)
@@ -287,7 +319,6 @@ void Ccomm_demoDlg::app_init_ui(void)
 	sampleRateStr.ReleaseBuffer();
 
 	GetDlgItem(IDC_STATIC_STEPCOUNTER)->ShowWindow(SW_HIDE);
-	GetDlgItem(IDC_BUTTON_CIC)->ShowWindow(SW_HIDE);
 	GetDlgItem(IDC_BUTTON_CALI)->ShowWindow(SW_HIDE);
 	
 	//m_textFont.CreatePointFont(200, L"宋体");
@@ -313,10 +344,8 @@ void Ccomm_demoDlg::app_init_ui(void)
 
 void Ccomm_demoDlg::app_refresh_ui(int type)
 {
-	//CString 	TitleStr;
-	CString 	sampleRateStr;
+	CString uiStr;
 
-	GetDlgItem(IDC_BUTTON_CIC)->ShowWindow(SW_HIDE);
 	GetDlgItem(IDC_BUTTON_CALI)->ShowWindow(SW_HIDE);
 #if defined(QMAX981_STEPCOUNTER)
 	GetDlgItem(IDC_STATIC_STEPCOUNTER)->ShowWindow(SW_SHOW);
@@ -344,14 +373,26 @@ void Ccomm_demoDlg::app_refresh_ui(int type)
 	if(master_connect)
 	{
 		GetDlgItem(IDC_BT_OPEN_COMM)->SetWindowTextW(_T("Close"));
-		//GetDlgItem(IDC_BT_OPEN_COMM)->EnableWindow(FALSE);
 		GetDlgItem(IDC_BT_START)->EnableWindow(1);
+
+		GetDlgItem(IDC_EDIT_SAMPLERATE)->GetWindowTextW(uiStr);
+		sampleRate = _wtoi(uiStr.GetBuffer(uiStr.GetLength()));
+
+		GetDlgItem(IDC_EDIT_SAMPLERATE)->EnableWindow(FALSE);
+		GetDlgItem(IDC_CHECK_SAVEDATA)->EnableWindow(FALSE);
+		GetDlgItem(IDC_CHECK_PROTOCOL)->EnableWindow(FALSE);
 	}
 	else
 	{
 		GetDlgItem(IDC_BT_OPEN_COMM)->SetWindowTextW(_T("Open"));
-		//GetDlgItem(IDC_BT_OPEN_COMM)->EnableWindow(TRUE);
 		GetDlgItem(IDC_BT_START)->EnableWindow(0);
+
+		uiStr.Empty();
+		uiStr.Format(L"%d", sampleRate);
+		GetDlgItem(IDC_EDIT_SAMPLERATE)->SetWindowTextW(uiStr);
+		GetDlgItem(IDC_EDIT_SAMPLERATE)->EnableWindow(TRUE);
+		GetDlgItem(IDC_CHECK_SAVEDATA)->EnableWindow(TRUE);
+		GetDlgItem(IDC_CHECK_PROTOCOL)->EnableWindow(TRUE);
 	}
 	
 	if(master_start)
@@ -363,37 +404,10 @@ void Ccomm_demoDlg::app_refresh_ui(int type)
 		GetDlgItem(IDC_BT_START)->SetWindowTextW(_T("Start"));
 	}
 
-	//TitleStr.Empty();
-	//TitleStr.SetString(L"QST sensor Demo\n");
-	//TitleStr.Append(L"zhiqiang_yang@qstcorp.com");
-	//GetDlgItem(IDC_STATIC_TITLE)->SetWindowTextW(TitleStr.GetString());
-	//GetDlgItem(IDC_STATIC_TITLE)->ShowWindow(SW_HIDE);
-
-	if(QST_SENSOR_NONE == sensor_type)
-	{
-		sampleRateStr.Empty();
-		sampleRateStr.Format(L"%d", sampleRate);
-		GetDlgItem(IDC_EDIT_SAMPLERATE)->SetWindowTextW(sampleRateStr);
-
-		GetDlgItem(IDC_EDIT_SAMPLERATE)->EnableWindow(TRUE);
-		GetDlgItem(IDC_CHECK_SAVEDATA)->EnableWindow(TRUE);
-		GetDlgItem(IDC_CHECK_PROTOCOL)->EnableWindow(TRUE);
-	}
-	else
-	{
-		GetDlgItem(IDC_EDIT_SAMPLERATE)->GetWindowTextW(sampleRateStr);
-		sampleRate = _wtoi(sampleRateStr.GetBuffer(sampleRateStr.GetLength()));
-	
-		GetDlgItem(IDC_EDIT_SAMPLERATE)->EnableWindow(FALSE);
-		GetDlgItem(IDC_CHECK_SAVEDATA)->EnableWindow(FALSE);
-		GetDlgItem(IDC_CHECK_PROTOCOL)->EnableWindow(FALSE);
-	}	
-	QST_PRINTF("sampleRate = %d ms \n", sampleRate);
-
-	sampleRateStr.Empty();
-	sampleRateStr.Format(L"%x", edit_slave);
-	GetDlgItem(IDC_EDIT_SLAVE)->SetWindowTextW(sampleRateStr.GetString());
-	sampleRateStr.ReleaseBuffer();
+	uiStr.Empty();
+	uiStr.Format(L"%x", edit_slave);
+	GetDlgItem(IDC_EDIT_SLAVE)->SetWindowTextW(uiStr.GetString());
+	uiStr.ReleaseBuffer();
 
 	m_ChartCtrl.EnableRefresh(true);
 	//m_ChartCtrl_2.EnableRefresh(true);	
@@ -770,15 +784,12 @@ BOOL Ccomm_demoDlg::open_comm(int prot)
 
 void Ccomm_demoDlg::app_exit(void)
 {
-	master_connect = FALSE;
-	sensor_type = QST_SENSOR_NONE;
-	master_start = FALSE;
 	KillTimer(SENSOR_TIMER_ID_1);
-	i2c_spi_close_device();
-	com_close_device();
-	app_init_para();
-	app_refresh_ui(QST_SENSOR_NONE);
 	app_close_file();
+	usb_close_device();
+	com_close_device();
+	app_reset_para();
+	app_refresh_ui(QST_SENSOR_NONE);
 }
 
 void Ccomm_demoDlg::app_open_file(void)
@@ -789,11 +800,11 @@ void Ccomm_demoDlg::app_open_file(void)
 	QST_PRINTF("Save data check : %d \n", pCheckBox->GetCheck());
 	if((log_flag == FALSE)&&(pCheckBox->GetCheck()))
 	{
-		SYSTEMTIME st;	 
+		SYSTEMTIME st;
 		CString file_name;
 		GetLocalTime(&st);	 
 		QST_PRINTF("%d-%d-%d-%02d-%02d-%02d", st.wYear,st.wMonth,st.wDay,st.wHour,st.wMinute,st.wSecond);
-		file_name.Format(L"%d-%d-%d-%02d-%02d-%02d", st.wYear,st.wMonth,st.wDay,st.wHour,st.wMinute,st.wSecond);
+		file_name.Format(L"%d%d%d-%02d%02d%02d.txt", st.wYear,st.wMonth,st.wDay,st.wHour,st.wMinute,st.wSecond);
 		log_flag = log_file.Open(file_name.GetString(), CFile::modeCreate | CFile::modeWrite);
 		QST_PRINTF("log_flag=%d  %d\n", log_flag, log_file.m_hFile);
 	}
@@ -831,7 +842,7 @@ void Ccomm_demoDlg::OnBnClickedBtOpenDevice()
 			if(IsDlgButtonChecked(IDC_CHECK_PROTOCOL))
 			{
 				protocol_type = USB_SPI;
-				master_connect = spi_init(master_type, 6*1000*1000, 3);
+				master_connect = spi_init(master_type, SPI_SubMode_0);
 			}
 			else
 			{
@@ -847,6 +858,8 @@ void Ccomm_demoDlg::OnBnClickedBtOpenDevice()
 				master_connect = TRUE;
 			}
 		}
+		if(master_connect)
+			app_open_file();
 
 		app_refresh_ui(sensor_type);
 	}
@@ -870,13 +883,30 @@ void Ccomm_demoDlg::OnBnClickedBtStart()
 			{
 				sensor_type |= QST_SENSOR_ACCEL;
 				acc_type = QST_ACCEL_QMAX981;
+				edit_slave = qmaX981_get_slave();
+				device_register_irq(qmaX981_irq_hdlr);
 			}
 			else if(qma6100_init())
 			{
 				sensor_type |= QST_SENSOR_ACCEL;
 				acc_type = QST_ACCEL_QMA6100;
+				edit_slave = qma6100_get_slave();
+				device_register_irq(qma6100_irq_hdlr);
 			}
-			line_set |= (QST_LINE1_ENABLE|QST_LINE2_ENABLE|QST_LINE3_ENABLE);
+			else if(lis3dh_init())
+			{
+				sensor_type |= QST_SENSOR_ACCEL;
+				acc_type = QST_ACCEL_LIS3DH;
+				edit_slave = lis3dh_get_slave();
+				//device_register_irq(NULL);
+			}
+			else
+			{
+				acc_type = QST_ACCEL_NONE;
+			}
+
+			if(acc_type > QST_ACCEL_NONE)
+				line_set |= (QST_LINE1_ENABLE|QST_LINE2_ENABLE|QST_LINE3_ENABLE);
 #endif
 #if defined(QST_MAGNETIC_SUPPORT)
 			if(qmcX983_init())
@@ -888,8 +918,19 @@ void Ccomm_demoDlg::OnBnClickedBtStart()
 			{
 				sensor_type |= QST_SENSOR_MAG;
 				mag_type = QST_MAG_QMC6308;
+			}			
+			else if(Qmc5883_InitConfig())
+			{
+				sensor_type |= QST_SENSOR_MAG;
+				mag_type = QST_MAG_QMC5883L;
 			}
-			line_set |= (QST_LINE1_ENABLE|QST_LINE2_ENABLE|QST_LINE3_ENABLE);
+			else
+			{
+				mag_type = QST_MAG_NONE;
+			}
+
+			if(mag_type > QST_MAG_NONE)
+				line_set |= (QST_LINE1_ENABLE|QST_LINE2_ENABLE|QST_LINE3_ENABLE);
 #endif
 #if defined(QST_PRESSURE_SUPPORT)
 			if(qmp6988_init(&qmp6988))
@@ -897,27 +938,47 @@ void Ccomm_demoDlg::OnBnClickedBtStart()
 				sensor_type |= QST_SENSOR_PRESS;
 				press_type = QST_PRESS_QMP6988;
 			}
-			line_set = (QST_LINE1_ENABLE);
+			else
+			{
+				press_type = QST_PRESS_NONE;
+			}
+			if(press_type > QST_PRESS_NONE)
+				line_set |= QST_LINE1_ENABLE;
 #endif
 #if defined(QST_ACCGYRO_SUPPORT)
-			if(qmi8610_init())
+			accgyro_type = QST_ACCGYRO_NONE;
+			if(accgyro_type == QST_ACCGYRO_NONE)
 			{
-				sensor_type |= QST_SENSOR_ACCGYRO;
-				accgyro_type = QST_ACCGYRO_QMI8610;
+				spi_config(4*1000*1000, 3);
+				if(qmi8610_init())
+				{
+					sensor_type |= QST_SENSOR_ACCGYRO;
+					accgyro_type = QST_ACCGYRO_QMI8610;
+				}
+				else if(Qmi8658_init())
+				{
+					sensor_type |= QST_SENSOR_ACCGYRO;
+					accgyro_type = QST_ACCGYRO_QMI8658;
+				}
 			}
-			else if(Qmi8658_init())
+			if(accgyro_type == QST_ACCGYRO_NONE)
 			{
-				sensor_type |= QST_SENSOR_ACCGYRO;
-				accgyro_type = QST_ACCGYRO_QMI8658;
+				spi_config(4*1000*1000, 0);
+				if(bmi160_init())
+				{
+					sensor_type |= QST_SENSOR_ACCGYRO;
+					accgyro_type = QST_ACCGYRO_BMI160;
+				}
 			}
-			line_set |= (QST_LINE1_ENABLE|QST_LINE2_ENABLE|QST_LINE3_ENABLE);
+
+			if(accgyro_type > QST_ACCGYRO_NONE)
+				line_set |= (QST_LINE1_ENABLE|QST_LINE2_ENABLE|QST_LINE3_ENABLE);
 #endif
 			Sleep(300);
 			if(sensor_type != QST_SENSOR_NONE)
 			{
 				master_start = TRUE;
 				app_refresh_ui(sensor_type);
-				app_open_file();
 				SetTimer(SENSOR_TIMER_ID_1, sampleRate, NULL);
 			}
 		}
@@ -968,9 +1029,11 @@ BOOL Ccomm_demoDlg::OnDeviceChange(UINT nEventType, DWORD dwData)
 		break;  
 	}
 
-	i2c_spi_close_device();
+	usb_close_device();
 	com_close_device();
-	app_init_para();
+	app_reset_para();
+	master_type = usb_open_device();
+	usb_close_device();
 	app_refresh_ui(sensor_type);
 
 	return TRUE;
@@ -999,6 +1062,10 @@ void Ccomm_demoDlg::OnTimer(UINT_PTR nIDEvent)
 				step = qma6100_read_stepcounter();
 	#endif
 			}
+			else if(acc_type == QST_ACCEL_LIS3DH)
+			{
+				lis3dh_read_acc_xyz(&sensor_data[0]);
+			}
 		}
 #endif
 #if defined(QST_MAGNETIC_SUPPORT)
@@ -1012,6 +1079,10 @@ void Ccomm_demoDlg::OnTimer(UINT_PTR nIDEvent)
 			{
 				qmc6308_read_mag_xyz(&sensor_data[3]);
 			}
+			else if(mag_type == QST_MAG_QMC5883L)
+			{
+				Qmc5883_GetData(&sensor_data[3]);				
+			}
 		}
 #endif
 #if defined(QST_PRESSURE_SUPPORT)
@@ -1020,8 +1091,9 @@ void Ccomm_demoDlg::OnTimer(UINT_PTR nIDEvent)
 			if(press_type == QST_PRESS_QMP6988)
 			{
 				qmp6988_calc_pressure(&qmp6988, &sensor_data[1], &sensor_data[0]);
-				sensor_data[2] = ExeBtwzFilter(sensor_data[0]);
-				QST_PRINTF("%f	%f\n", sensor_data[0], sensor_data[1]);
+				sensor_data[2] = ExeBtwzFilter(sensor_data[0]);				
+				line_set |= QST_LINE3_ENABLE;
+				//QST_PRINTF("%f	%f\n", sensor_data[0], sensor_data[1]);
 			}
 		}
 #endif
@@ -1030,11 +1102,15 @@ void Ccomm_demoDlg::OnTimer(UINT_PTR nIDEvent)
 		{
 			if(accgyro_type == QST_ACCGYRO_QMI8610)
 			{
-				qmi8610_read_xyz(&sensor_data[6], &sensor_data[0], NULL);
+				qmi8610_read_xyz(&sensor_data[0], &sensor_data[6], NULL);
 			}
 			else if(accgyro_type == QST_ACCGYRO_QMI8658)
 			{
-				Qmi8658_read_xyz(&sensor_data[6], &sensor_data[0], NULL);
+				Qmi8658_read_xyz(&sensor_data[0], &sensor_data[6], NULL);
+			}
+			else if(accgyro_type == QST_ACCGYRO_BMI160)
+			{
+				bmi160_read_xyz(&sensor_data[0], &sensor_data[6]);
 			}
 		}
 #endif
@@ -1186,9 +1262,57 @@ void Ccomm_demoDlg::OnBnClickedButtonRegWrite()
 	}
 	else if(protocol_type == USB_SPI)
 	{
-		if(acc_type == QST_ACCEL_QMA6100)
+		if(sensor_type & QST_SENSOR_ACCEL)
+		{
+			if(acc_type == QST_ACCEL_QMA6100)
+			{			
+				qma6100_writereg(reg_addr, reg_value);
+			}
+			else if(acc_type == QST_ACCEL_QMAX981)
+			{
+				qmaX981_writereg(reg_addr, reg_value);
+			}
+			else if(acc_type == QST_ACCEL_LIS3DH)
+			{
+				lis3dh_write_reg(reg_addr, reg_value);
+			}
+		}		
+		if(sensor_type & QST_SENSOR_MAG)
 		{			
-			qma6100_writereg(reg_addr, reg_value);
+			if(mag_type == QST_MAG_QMC7983)
+			{
+				qmcX983_WriteReg(reg_addr, reg_value);
+			}
+			else if(mag_type == QST_MAG_QMC6308)
+			{
+				qmc6308_write_reg(reg_addr, reg_value);
+			}
+			else if(mag_type == QST_MAG_QMC5883L)
+			{
+				Qmc5883_WriteReg(reg_addr, reg_value);
+			}
+		}		
+		if(sensor_type & QST_SENSOR_PRESS)
+		{
+			if(press_type == QST_PRESS_QMP6988)
+			{
+				qmp6988_WriteReg(0x70,reg_addr, reg_value);
+			}
+		}		
+		if(sensor_type & QST_SENSOR_ACCGYRO)
+		{
+			if(accgyro_type == QST_ACCGYRO_QMI8610)
+			{
+				qmi8610_write_reg(reg_addr, reg_value);
+			}
+			else if(accgyro_type == QST_ACCGYRO_QMI8658)
+			{
+				Qmi8658_write_reg(reg_addr, reg_value);
+			}
+			else if(accgyro_type == QST_ACCGYRO_BMI160)
+			{
+				bmi160_write_reg(reg_addr, reg_value);
+			}
 		}
 	}
 }
@@ -1246,9 +1370,57 @@ void Ccomm_demoDlg::OnBnClickedButtonRegRead()
 	}
 	else if(protocol_type == USB_SPI)
 	{
-		if(acc_type == QST_ACCEL_QMA6100)
+		if(sensor_type & QST_SENSOR_ACCEL)
 		{
-			qma6100_readreg(reg_addr, &reg_value, 1);
+			if(acc_type == QST_ACCEL_QMA6100)
+			{			
+				qma6100_readreg(reg_addr, &reg_value, 1);
+			}
+			else if(acc_type == QST_ACCEL_QMAX981)
+			{
+				qmaX981_readreg(reg_addr, &reg_value, 1);
+			}
+			else if(acc_type == QST_ACCEL_LIS3DH)
+			{
+				lis3dh_read_reg(reg_addr, &reg_value, 1);
+			}
+		}		
+		if(sensor_type & QST_SENSOR_MAG)
+		{			
+			if(mag_type == QST_MAG_QMC7983)
+			{
+				qmcX983_ReadData(reg_addr, &reg_value, 1);
+			}
+			else if(mag_type == QST_MAG_QMC6308)
+			{
+				qmc6308_read_block(reg_addr, &reg_value, 1);
+			}
+			else if(mag_type == QST_MAG_QMC5883L)
+			{
+				Qmc5883_ReadReg(reg_addr, &reg_value, 1);
+			}
+		}		
+		if(sensor_type & QST_SENSOR_PRESS)
+		{
+			if(press_type == QST_PRESS_QMP6988)
+			{
+				qmp6988_ReadData(0x70, reg_addr, &reg_value, 1);
+			}
+		}		
+		if(sensor_type & QST_SENSOR_ACCGYRO)
+		{
+			if(accgyro_type == QST_ACCGYRO_QMI8610)
+			{
+				qmi8610_read_reg(reg_addr, &reg_value, 1);
+			}
+			else if(accgyro_type == QST_ACCGYRO_QMI8658)
+			{
+				Qmi8658_read_reg(reg_addr, &reg_value, 1);
+			}
+			else if(accgyro_type == QST_ACCGYRO_BMI160)
+			{
+				bmi160_read_reg(reg_addr, &reg_value, 1);
+			}
 		}
 	}
 
@@ -1259,13 +1431,6 @@ void Ccomm_demoDlg::OnBnClickedButtonRegRead()
 	pInput = (CEdit*)GetDlgItem(IDC_EDIT_REG_VALUE);
 	pInput->SetWindowTextW((wchar_t*)buff_out);
 }
-
-
-void Ccomm_demoDlg::OnBnClickedButtonCic()
-{
-	// TODO: 在此添加控件通知处理程序代码
-}
-
 
 void Ccomm_demoDlg::OnEnChangeEditSlave()
 {

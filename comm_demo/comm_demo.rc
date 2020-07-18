@@ -68,7 +68,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON                    "res\\comm_demo.ico"
+IDR_MAINFRAME           ICON                    "res\\qstevb.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -93,7 +93,7 @@ CAPTION "QST sensor demo"
 FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     PUSHBUTTON      "quit",IDCANCEL,519,356,50,14,NOT WS_VISIBLE
-    RTEXT           "QST",IDC_STATIC_TITLE,474,9,92,21,SS_NOTIFY | NOT WS_GROUP
+    RTEXT           "QST sensor demo",IDC_STATIC_TITLE,430,26,58,10,SS_NOTIFY | NOT WS_GROUP
     PUSHBUTTON      "Init",IDC_BT_OPEN_COMM,98,16,44,14
     LTEXT           "Devices:",IDC_STATIC_PORT,10,19,32,11,0,WS_EX_RIGHT
     EDITTEXT        IDC_EDIT_PORT,48,17,42,13,ES_AUTOHSCROLL | ES_NUMBER | WS_GROUP
@@ -112,13 +112,12 @@ BEGIN
     PUSHBUTTON      "Read",IDC_BUTTON_REG_READ,20,350,50,14,WS_GROUP
     LTEXT           "0x",IDC_STATIC,25,293,8,9,0,WS_EX_RIGHT
     LTEXT           "0x",IDC_STATIC,25,318,8,9,0,WS_EX_RIGHT
-    PUSHBUTTON      "Acc CIC",IDC_BUTTON_CIC,98,356,50,14
     GROUPBOX        "Data:",IDC_STATIC_GROUP_DATA,8,40,84,195,WS_GROUP
     GROUPBOX        "Register operation:",IDC_STATIC,8,246,84,125
     LTEXT           "Slave(7bit)£º",IDC_STATIC,21,256,42,8
     EDITTEXT        IDC_EDIT_SLAVE,33,266,31,12,ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "0x",IDC_STATIC,24,269,8,9,0,WS_EX_RIGHT
-    PUSHBUTTON      "Acc Cali",IDC_BUTTON_CALI,154,356,50,14
+    PUSHBUTTON      "Calibrate",IDC_BUTTON_CALI,98,354,50,14
     CONTROL         "SPI",IDC_CHECK_PROTOCOL,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,262,26,19,10,WS_EX_RIGHT
     CONTROL         "Í¼±í2",IDC_CHARTCTRL_2,"ChartCtrl",WS_CLIPCHILDREN | WS_GROUP | WS_TABSTOP,99,207,239,136
     LTEXT           "Barometric",IDC_STATIC_PRESSDATA,13,158,72,38,0,WS_EX_STATICEDGE
@@ -127,7 +126,7 @@ BEGIN
     GROUPBOX        "IO",IDC_STATIC_IO,325,5,88,34
     PUSHBUTTON      "Wriet IO",IDC_BUTTON_IO_WRITE,364,16,38,14
     GROUPBOX        "",IDC_STATIC_CONTROL,8,5,281,34
-    CONTROL         "http://www.qstcorp.com/",IDC_MFCLINK_QSTCORP,"MfcLink",WS_TABSTOP,427,17,88,10
+    CONTROL         "http://www.qstcorp.com/",IDC_MFCLINK_QSTCORP,"MfcLink",WS_TABSTOP,432,10,88,10
     PUSHBUTTON      "Start",IDC_BT_START,148,16,47,14
 END
 

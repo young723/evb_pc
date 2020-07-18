@@ -1,7 +1,7 @@
 #ifndef __QMCX983_H
 #define __QMCX983_H
 
-#include "i2c_spi.h"
+#include "usb_device.h"
 #include <string.h>
 #include <stdio.h>
 #include "conio.h"
@@ -128,7 +128,9 @@
 
 #define CALIBRATION_DATA_SIZE		28
 
-extern unsigned char qmcX983_init(void);
-extern int qmcX983_read_mag_xyz(float *data);
+unsigned char qmcX983_WriteReg(unsigned char reg_add,unsigned char reg_dat);
+unsigned char qmcX983_ReadData(unsigned char reg_add,unsigned char* Read, unsigned short num);
+unsigned char qmcX983_init(void);
+int qmcX983_read_mag_xyz(float *data);
 
 #endif  /*__MPU6050*/

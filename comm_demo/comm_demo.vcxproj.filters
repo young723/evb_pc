@@ -96,9 +96,6 @@
     <ClCompile Include="cali_3d\ical.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="i2c_spi\i2c_spi.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="qmaX981\qmaX981.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -121,6 +118,18 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="qmi8658\qmi8658.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="qmc5883l\qmc5883.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="usb_device\usb_device.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="bmi160\bmi160.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="lis3dh\lis3dh.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -236,9 +245,6 @@
     <ClInclude Include="USBIOX.H">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="i2c_spi\i2c_spi.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="USB2UARTSPIIICDLL.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -266,6 +272,18 @@
     <ClInclude Include="qmi8658\qmi8658.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="qmc5883l\qmc5883.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="usb_device\usb_device.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="bmi160\bmi160.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="lis3dh\lis3dh.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\comm_demo.ico">
@@ -287,10 +305,18 @@
     <None Include="ChartCtrl\ChartSerieBase.inl">
       <Filter>头文件</Filter>
     </None>
+    <None Include="res\qstevb.rc2">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="comm_demo.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\qstevb.ico">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -18,14 +18,17 @@
 #include "ChartLineSerie.h"
 #include "ChartBarSerie.h"
 #include "MyFilter.h"
-#include "i2c_spi.h"
+#include "usb_device.h"
 #include "qmaX981.h"
 #include "qma6100.h"
 #include "qmcX983.h"
 #include "qmc6308.h"
+#include "qmc5883.h"
 #include "qmp6988.h"
 #include "qmi8610.h"
 #include "qmi8658.h"
+#include "bmi160.h"
+#include "lis3dh.h"
 
 //typedef unsigned char uint8;
 //typedef char int8;
@@ -44,8 +47,8 @@
 
 #define QST_ACCELEMRTER_SUPPORT
 //#define QST_MAGNETIC_SUPPORT
-//#define QST_PRESSURE_SUPPORT
-//#define QST_ACCGYRO_SUPPORT
+#define QST_PRESSURE_SUPPORT
+#define QST_ACCGYRO_SUPPORT
 
 typedef struct
 {
@@ -73,6 +76,7 @@ typedef enum
 	QST_ACCEL_QMA6100,
 	QST_ACCEL_QMI8610,
 	QST_ACCEL_QMI8658,
+	QST_ACCEL_LIS3DH,
 
 	QST_ACCEL_TOTAL
 } qst_acc_type;
@@ -83,6 +87,7 @@ typedef enum
 	QST_MAG_QMC7983,
 	QST_MAG_QMC6308,
 	QST_MAG_QMC6310,
+	QST_MAG_QMC5883L,
 
 	QST_MAG_TOTAL
 } qst_mag_type;
@@ -101,6 +106,7 @@ typedef enum
 	QST_ACCGYRO_NONE,
 	QST_ACCGYRO_QMI8610,
 	QST_ACCGYRO_QMI8658,
+	QST_ACCGYRO_BMI160,
 
 	QST_ACCGYRO_TOTAL
 } qst_accgyro_type;
@@ -188,6 +194,7 @@ public:
 	//BOOL open_comm(int prot);
 
 	void app_init_para(void);
+	void app_reset_para(void);
 	void app_init_ui(void);
 	void app_refresh_ui(int type);
 	void app_data_update(void);
@@ -200,6 +207,7 @@ public:
 // log file
 
 private:
+	SYSTEMTIME		qst_time;
 	int				sampleRate;
 	int				mag_accuracy;
  	int			 	mComNum;

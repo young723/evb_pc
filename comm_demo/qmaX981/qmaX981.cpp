@@ -59,7 +59,7 @@ qs32 qmaX981_writereg(qu8 reg_add, qu8 reg_dat)
 
 	while((!ret) && (retry++ < 5))
 	{
-		if(get_i2c_spi_protocol() == USB_SPI)
+		if(get_device_protocol() == USB_SPI)
 		{
 			ret = 0;
 		}
@@ -82,7 +82,7 @@ qs32 qmaX981_readreg(qu8 reg_add, qu8 *buf, qu16 num)
 
 	while((!ret) && (retry++ < 5))
 	{
-		if(get_i2c_spi_protocol() == USB_SPI)
+		if(get_device_protocol() == USB_SPI)
 		{
 			ret = 0;
 			//ret = qmaX981_spi_read_reg(reg_add, buf, num);
@@ -99,6 +99,10 @@ qs32 qmaX981_readreg(qu8 reg_add, qu8 *buf, qu16 num)
 		return QMAX981_ERROR;
 }
 
+qu8 qmaX981_get_slave(void)
+{
+	return g_qmaX981.slave;
+}
 
 qu8 qmaX981_chip_id(void)
 {
@@ -682,7 +686,7 @@ void qmaX981_irq_hdlr(void)
 	ret = qmaX981_readreg(0x09, databuf, 4);
 	if(ret == QMAX981_SUCCESS)
 	{
-		//QMAX981_LOG("qma7981_irq_hdlr [0x%x 0x%x 0x%x]\n", databuf[0],databuf[1],databuf[2]);
+		QMAX981_LOG(" qma7981_irq_hdlr [0x%x 0x%x 0x%x 0x%x] @ ", databuf[0],databuf[1],databuf[2],databuf[3]);
 	}
 	else
 	{

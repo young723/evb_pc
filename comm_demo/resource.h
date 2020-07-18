@@ -22,8 +22,6 @@
 #define IDC_EDIT_REG_VALUE              1015
 #define IDC_BUTTON_REG_WRITE            1016
 #define IDC_BUTTON_REG_READ             1017
-#define IDC_BUTTON_CIC                  1018
-#define IDC_EDIT_REG_ADDR2              1019
 #define IDC_EDIT_SLAVE                  1019
 #define IDC_STATIC_GROUP_DATA           1021
 #define IDC_BUTTON_CALI                 1022

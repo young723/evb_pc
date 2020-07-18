@@ -1,7 +1,7 @@
 #ifndef __QMP6988_H
 #define __QMP6988_H
 
-#include "i2c_spi.h"
+#include "usb_device.h"
 #include <string.h>
 #include <stdio.h>
 #include "conio.h"
@@ -135,7 +135,9 @@ typedef struct qmp6988_data
 #endif
 }qmp6988_data;
 
-extern QMP6988_U8_t qmp6988_init(qmp6988_data *qmp6988);
-extern void qmp6988_calc_pressure(qmp6988_data *qmp6988, float* temperature, float* pressure);
+QMP6988_U8_t qmp6988_WriteReg(QMP6988_U8_t slave, QMP6988_U8_t reg_add,QMP6988_U8_t reg_dat);
+QMP6988_U8_t qmp6988_ReadData(QMP6988_U8_t slave, QMP6988_U8_t reg_add,unsigned char* Read,QMP6988_U8_t num);
+QMP6988_U8_t qmp6988_init(qmp6988_data *qmp6988);
+void qmp6988_calc_pressure(qmp6988_data *qmp6988, float* temperature, float* pressure);
 
 #endif

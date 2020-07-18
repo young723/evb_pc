@@ -2,12 +2,11 @@
 //
 
 #include "stdafx.h"
-#include "conio.h"
-#include "i2c_spi.h"
+#include "usb_device.h"
 
-#define I2C_SPI_LOG		_cprintf
+#define USB_DEVICE_LOG		_cprintf
 
-static i2c_spi_t device_info = 
+static usb_device_t device_info = 
 {
 	USB_I2C,
 	DEVICE_CH341A,
@@ -19,11 +18,18 @@ static i2c_spi_t device_info =
 
 	FALSE,
 	INVALID_HANDLE_VALUE,
-	
+
+	NULL,
+
 	{0,}
 };
 
-int i2c_spi_open_device(void)
+int get_device_protocol(void)
+{
+	return device_info.protocol;
+}
+
+int usb_open_device(void)
 {	
 	if(device_info.usb_open)
 	{	
@@ -36,20 +42,22 @@ int i2c_spi_open_device(void)
 	{
 		if(device_info.mCh341Handle == INVALID_HANDLE_VALUE)
 		{
+			device_info.mCh341Index = 0;
 			device_info.mCh341Handle = USBIO_OpenDevice(device_info.mCh341Index);
 		}
 		if(device_info.mCh341Handle != INVALID_HANDLE_VALUE)
 		{
-			I2C_SPI_LOG("ch341 open OK!\n");
+			USB_DEVICE_LOG("ch341 open OK!\n");
 			device_info.usb_open = TRUE;
 			return DEVICE_CH341A;			
 		}
 		else
 		{
+			device_info.mStm32Index = 0;
 			device_info.usb_open = OpenUsb(device_info.mStm32Index);
 			if(device_info.usb_open)
 			{		
-				I2C_SPI_LOG("stm32 open OK!\n");
+				USB_DEVICE_LOG("stm32 open OK!\n");
 				return DEVICE_STM32F103;
 			}
 		}
@@ -58,7 +66,7 @@ int i2c_spi_open_device(void)
 	return DEVICE_NONE;
 }
 
-BOOL i2c_spi_close_device(void)
+BOOL usb_close_device(void)
 {
 	if(device_info.usb_open)
 	{
@@ -68,14 +76,14 @@ BOOL i2c_spi_close_device(void)
 			device_info.mCh341Handle=INVALID_HANDLE_VALUE;
 			device_info.usb_open = FALSE;			
 			device_info.device = DEVICE_NONE;
-			I2C_SPI_LOG("ch341 close OK!\n");
+			USB_DEVICE_LOG("ch341 close OK!\n");
 		}
 		else
 		{
 			CloseUSB(device_info.mStm32Index);
 			device_info.usb_open = FALSE;
 			device_info.device = DEVICE_NONE;
-			I2C_SPI_LOG("stm32 close OK!\n");
+			USB_DEVICE_LOG("stm32 close OK!\n");
 		}
 	}
 
@@ -111,7 +119,7 @@ int com_open_device(int com_num)
 		}
 		if(device_info.hCom != INVALID_HANDLE_VALUE)
 		{	
-			I2C_SPI_LOG("Com%d open Success\n", com_num);
+			USB_DEVICE_LOG("Com%d open Success\n", com_num);
 			SetupComm(device_info.hCom, 1024, 1024);
 			GetCommState(device_info.hCom, &dcb);
 			dcb.BaudRate = 9600;	//9600;
@@ -120,7 +128,7 @@ int com_open_device(int com_num)
 			dcb.StopBits = ONESTOPBIT;
 			if(!SetCommState(device_info.hCom, &dcb))
 			{
-				I2C_SPI_LOG("SetCommState fail\n");
+				USB_DEVICE_LOG("SetCommState fail\n");
 				AfxMessageBox(_T("SetCommState fail"), MB_OK, MB_ICONINFORMATION);
 				return DEVICE_NONE;
 			}
@@ -131,7 +139,7 @@ int com_open_device(int com_num)
 			timeouts.WriteTotalTimeoutConstant = 3;  
 			if(!SetCommTimeouts(device_info.hCom, &timeouts))
 			{
-				I2C_SPI_LOG("set com time-out error! \n");
+				USB_DEVICE_LOG("set com time-out error! \n");
 				AfxMessageBox(_T("set com time-out fail"), MB_OK, MB_ICONINFORMATION);
 				return DEVICE_NONE;
 			}
@@ -152,7 +160,7 @@ int com_open_device(int com_num)
 					com_status = ReadFile(device_info.hCom, buf_wr, 1, &len, NULL);
 					if(com_status && (len==1))
 					{
-						I2C_SPI_LOG("read com_status=%d, data=0x%x \n",com_status, buf_wr[0]);
+						USB_DEVICE_LOG("read com_status=%d, data=0x%x \n",com_status, buf_wr[0]);
 						break;
 					}
 					Sleep(2);
@@ -160,17 +168,17 @@ int com_open_device(int com_num)
 				}
 				if(buf_wr[0] == 0x40)
 				{
-					I2C_SPI_LOG("CP2102 com to i2c controler communication OK!\n");
+					USB_DEVICE_LOG("CP2102 com to i2c controler communication OK!\n");
 				}
 				else
 				{
-					I2C_SPI_LOG("com to i2c controler communication Fail!\n");
+					USB_DEVICE_LOG("com to i2c controler communication Fail!\n");
 					//return DEVICE_NONE;
 				}
 			}
 			else
 			{
-				I2C_SPI_LOG("WriteFile error \n");
+				USB_DEVICE_LOG("WriteFile error \n");
 				return DEVICE_NONE;
 			}
 
@@ -193,7 +201,7 @@ int com_open_device(int com_num)
 			dcb.Parity = NOPARITY;
 			dcb.StopBits = ONESTOPBIT;
 			if(!SetCommState(device_info.hCom, &dcb))
-				I2C_SPI_LOG("串口参数设置失败\n");
+				USB_DEVICE_LOG("串口参数设置失败\n");
 			
 			timeouts.ReadIntervalTimeout = 1; 
 			timeouts.ReadTotalTimeoutMultiplier = 2; 
@@ -203,7 +211,7 @@ int com_open_device(int com_num)
 
 			if(!SetCommTimeouts(device_info.hCom, &timeouts))
 			{
-				I2C_SPI_LOG("Set Comm Time out error \n");
+				USB_DEVICE_LOG("Set Comm Time out error \n");
 				return DEVICE_NONE;
 			}
 
@@ -224,12 +232,12 @@ int com_open_device(int com_num)
 				{
 					if(buf_wr[0] == 0x40)
 					{
-						I2C_SPI_LOG("CP2102 com to i2c controler communication OK!\n");
+						USB_DEVICE_LOG("CP2102 com to i2c controler communication OK!\n");
 						break;
 					}
 					else
 					{
-						I2C_SPI_LOG("com to i2c controler communication Fail!\n");
+						USB_DEVICE_LOG("com to i2c controler communication Fail!\n");
 						return DEVICE_NONE;
 					}		
 				}
@@ -269,7 +277,7 @@ int com_close_device(void)
 					device_info.hCom = INVALID_HANDLE_VALUE;
 					device_info.com_open = FALSE;
 					device_info.device = DEVICE_NONE;
-					I2C_SPI_LOG("com close OK!\n");
+					USB_DEVICE_LOG("com close OK!\n");
 				}
 				Sleep(2);
 			}
@@ -284,12 +292,17 @@ BOOL i2c_init(int device, int rate)
 	BOOL status = FALSE;
 
 	if(device == DEVICE_CH341A)
-	{
+	{	
+		if(device_info.mCh341Handle)
+		{
+			USBIO_CloseDevice(device_info.mCh341Index);
+			device_info.mCh341Handle = INVALID_HANDLE_VALUE;
+		}
 		if(device_info.mCh341Handle==INVALID_HANDLE_VALUE)
 		{
 			device_info.mCh341Handle = USBIO_OpenDevice(device_info.mCh341Index);
 		}
-		I2C_SPI_LOG("mCh341Handle = %d \n", (int)device_info.mCh341Handle);
+		USB_DEVICE_LOG("mCh341Handle = %d \n", (int)device_info.mCh341Handle);
 		if(device_info.mCh341Handle != INVALID_HANDLE_VALUE)
 		{
 			device_info.usb_open = TRUE;
@@ -310,7 +323,7 @@ BOOL i2c_init(int device, int rate)
 		else
 		{
 			device_info.usb_open = FALSE;
-			I2C_SPI_LOG("CH341A open fail!\n");
+			USB_DEVICE_LOG("CH341A open fail!\n");
 		}
 	}
 	else if(device == DEVICE_STM32F103)
@@ -320,7 +333,7 @@ BOOL i2c_init(int device, int rate)
 			status = OpenUsb(device_info.mStm32Index);
 			device_info.usb_open = status;
 		}
-		I2C_SPI_LOG("stm32f103 open status = %d \n", status);
+		USB_DEVICE_LOG("stm32f103 open status = %d \n", status);
 		if(device_info.usb_open == TRUE)
 		{
 			device_info.usb_open = TRUE;
@@ -336,7 +349,7 @@ BOOL i2c_init(int device, int rate)
 		else
 		{
 			device_info.usb_open = FALSE;
-			I2C_SPI_LOG("STM32F103 open fail!\n");
+			USB_DEVICE_LOG("STM32F103 open fail!\n");
 		}
 	}
 	device_info.protocol = USB_I2C;
@@ -346,26 +359,32 @@ BOOL i2c_init(int device, int rate)
 	return device_info.usb_open;
 }
 
-BOOL spi_init(int device, int rate, int mode)
+BOOL spi_init(int device, unsigned int mode)
 {
 	BOOL status = FALSE;
 
 	if(device == DEVICE_CH341A)
 	{
+		if(device_info.mCh341Handle)
+		{
+			USBIO_CloseDevice(device_info.mCh341Index);
+			device_info.mCh341Handle = INVALID_HANDLE_VALUE;
+		}
 		if(device_info.mCh341Handle==INVALID_HANDLE_VALUE)
 		{
 			device_info.mCh341Handle = USBIO_OpenDevice(device_info.mCh341Index);
 		}
-		I2C_SPI_LOG("mCh341Handle = %d \n", (int)device_info.mCh341Handle);
+		USB_DEVICE_LOG("mCh341Handle = %d \n", (int)device_info.mCh341Handle);
 		if(device_info.mCh341Handle != INVALID_HANDLE_VALUE)
 		{
-			device_info.usb_open = TRUE;			
+			device_info.usb_open = TRUE;
+			USBIO_SetStream(device_info.mCh341Index,0x82);
 			USBIO_Set_D5_D0(device_info.mCh341Index,0xff,0x00); 	// add by yangzhiqiang
 		}
 		else
 		{
 			device_info.usb_open = FALSE;
-			I2C_SPI_LOG("CH341A open fail!\n");
+			USB_DEVICE_LOG("CH341A open fail!\n");
 		}
 	}
 	else if(device == DEVICE_STM32F103)
@@ -375,25 +394,16 @@ BOOL spi_init(int device, int rate, int mode)
 			status = OpenUsb(device_info.mStm32Index);
 			device_info.usb_open = status;
 		}
-		I2C_SPI_LOG("stm32f103 open status = %d \n", status);
+		USB_DEVICE_LOG("stm32f103 open status = %d \n", status);
 		if(device_info.usb_open == TRUE)
 		{
 			device_info.usb_open = TRUE;
-			if(rate <= 2*1000*1000)
-				ConfigSPIParam(SPI_Rate_1_125M, SPI_MSB, mode, device_info.mStm32Index);
-			else if(rate <= 4*1000*1000)
-				ConfigSPIParam(SPI_Rate_2_25M, SPI_MSB, mode, device_info.mStm32Index);
-			else if(rate <= 6*1000*1000)
-				ConfigSPIParam(SPI_Rate_4_5M, SPI_MSB, mode, device_info.mStm32Index);
-			else if(rate <= 10*1000*1000)
-				ConfigSPIParam(SPI_Rate_9M, SPI_MSB, mode, device_info.mStm32Index);
-			else
-				ConfigSPIParam(SPI_Rate_18M, SPI_MSB, mode, device_info.mStm32Index);
+			ConfigSPIParam(SPI_Rate_4_5M, SPI_MSB, mode, device_info.mStm32Index);
 		}
 		else
 		{
 			device_info.usb_open = FALSE;
-			I2C_SPI_LOG("STM32F103 open fail!\n");
+			USB_DEVICE_LOG("STM32F103 open fail!\n");
 		}
 	}
 	device_info.protocol = USB_SPI;
@@ -403,7 +413,28 @@ BOOL spi_init(int device, int rate, int mode)
 	return device_info.usb_open;
 }
 
-
+void spi_config(unsigned int rate, unsigned int mode)
+{
+	if(device_info.device == DEVICE_STM32F103)
+	{
+		if(device_info.usb_open == TRUE)
+		{
+			if(rate < 3*1000*1000)
+				ConfigSPIParam(SPI_Rate_2_25M, SPI_MSB, mode, device_info.mStm32Index);
+			else if(rate < 5*1000*1000)
+				ConfigSPIParam(SPI_Rate_4_5M, SPI_MSB, mode, device_info.mStm32Index);
+			else if(rate < 10*1000*1000)
+				ConfigSPIParam(SPI_Rate_9M, SPI_MSB, mode, device_info.mStm32Index);
+			else
+				ConfigSPIParam(SPI_Rate_18M, SPI_MSB, mode, device_info.mStm32Index);
+		}
+		else
+		{
+			device_info.usb_open = FALSE;
+			USB_DEVICE_LOG("STM32F103 not open!\n");
+		}
+	}
+}
 
 BOOL i2c_write_reg(unsigned char slave, unsigned char addr, unsigned char value)
 {
@@ -448,7 +479,7 @@ BOOL i2c_write_reg(unsigned char slave, unsigned char addr, unsigned char value)
 			Sleep(1);			
 		}
 		if(!status)
-			I2C_SPI_LOG("i2c_write_reg fail!\n");
+			USB_DEVICE_LOG("i2c_write_reg fail!\n");
 		Sleep(2);	// after write delay 20ms
 	}
 
@@ -511,7 +542,7 @@ BOOL i2c_read_reg(unsigned char slave, unsigned char addr, unsigned char *buf, u
 		}
 		
 		if(!status)
-			I2C_SPI_LOG("i2c_read_reg fail!\n");
+			USB_DEVICE_LOG("i2c_read_reg fail!\n");
 		//Sleep(2);
 	}
 
@@ -556,10 +587,7 @@ BOOL spi_read_reg(unsigned char addr, unsigned char *buf, unsigned short len)
 	return status;
 }
 
-int get_i2c_spi_protocol(void)
-{
-	return device_info.protocol;
-}
+
 
 BOOL device_write_io(unsigned char value)
 {
@@ -583,4 +611,27 @@ BOOL device_write_io(unsigned char value)
 
 	return status;
 }
+
+
+VOID CALLBACK ch341_irq_callback(ULONG iStatus)
+{
+	if(device_info.irq1_func)
+	{	
+		SYSTEMTIME st;	 
+		GetLocalTime(&st);	 
+		USB_DEVICE_LOG("%d-%d-%d-%02d-%02d-%02d.%03d ==>", st.wYear,st.wMonth,st.wDay,
+														st.wHour,st.wMinute,st.wSecond,st.wMilliseconds);
+		device_info.irq1_func();
+	}
+}
+
+void device_register_irq(irq_callback irq_fun)
+{
+	if(device_info.device == DEVICE_CH341A)
+	{
+		USBIO_SetIntRoutine(device_info.mCh341Index, ch341_irq_callback);
+		device_info.irq1_func = irq_fun;
+	}
+}
+
 

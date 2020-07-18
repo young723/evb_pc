@@ -2,7 +2,7 @@
 #define __QMA6100_H
 
 
-#include "i2c_spi.h"
+#include "usb_device.h"
 #include <string.h>
 #include <stdio.h>
 #include "conio.h"
@@ -26,14 +26,14 @@ typedef		double					qd64;
 
 //#define QMA6100_QST_USE_SPI
 
-//#define QMA6100_DATA_READY
+#define QMA6100_DATA_READY
 //#define QMA6100_FIFO_FUNC
 
 //#define QMA6100_ANY_MOTION
 //#define QMA6100_NO_MOTION
 //#define QMA6100_SIGNIFICANT_MOTION
 
-//#define QMA6100_STEPCOUNTER
+#define QMA6100_STEPCOUNTER
 //#define QMA6100_STEP_INT
 //#define QMA6100_SIGNIFICANT_STEP_INT
 
@@ -41,7 +41,7 @@ typedef		double					qd64;
 
 //#define QMA6100_HAND_RAISE_DOWN
 
-//#define QMA6100_INT_LATCH
+#define QMA6100_INT_LATCH
 
 #define QMA6100_DEVICE_ID		    0xfa
 #define QMA6100_I2C_SLAVE_ADDR		0x12	// AD0 GND 0x12, AD0 VDD 0x13
@@ -173,6 +173,7 @@ typedef enum
 
 extern qs32 qma6100_writereg(qu8 reg_add,qu8 reg_dat);
 extern qs32 qma6100_readreg(qu8 reg_add,qu8 *buf,qu16 num);
+extern qu8 qma6100_get_slave(void);
 extern qu8 qma6100_chip_id(void);
 extern qs32 qma6100_init(void);
 extern qs32 qma6100_set_range(unsigned char range);

@@ -38,7 +38,7 @@ unsigned char Qmi8658_write_reg(unsigned char reg, unsigned char value)
 
 	while((!ret) && (retry++ < 5))
 	{
-		if(get_i2c_spi_protocol() == USB_SPI)
+		if(get_device_protocol() == USB_SPI)
 		{
 			ret = spi_write_reg(reg, value);
 		}
@@ -70,8 +70,9 @@ unsigned char Qmi8658_read_reg(unsigned char reg, unsigned char* buf, unsigned s
 
 	while((!ret) && (retry++ < 5))
 	{
-		if(get_i2c_spi_protocol() == USB_SPI)
+		if(get_device_protocol() == USB_SPI)
 		{
+			reg |= 0x80;
 			ret = spi_read_reg(reg, buf, len);
 		}
 		else
@@ -561,13 +562,21 @@ unsigned char Qmi8658_init(void)
 	unsigned char qmi8658_revision_id = 0x00;
 	unsigned char qmi8658_slave[2] = {QMI8658_SLAVE_ADDR_L, QMI8658_SLAVE_ADDR_H};
 	unsigned char iCount = 0;
+	int retry = 0;
 
-	while((qmi8658_chip_id == 0x00)&&(iCount<2))
+	while(iCount<2)
 	{
 		qmi8658_slave_addr = qmi8658_slave[iCount];
-		Qmi8658_read_reg(Qmi8658Register_WhoAmI, &qmi8658_chip_id, 1);
+		retry = 0;
+		while((qmi8658_chip_id != 0x05)&&(retry++ < 5))
+		{
+			Qmi8658_read_reg(Qmi8658Register_WhoAmI, &qmi8658_chip_id, 1);
+			qmi8658_printf("Qmi8658Register_WhoAmI = 0x%x\n", qmi8658_chip_id);
+		}
 		if(qmi8658_chip_id == 0x05)
+		{
 			break;
+		}
 		iCount++;
 	}
 	Qmi8658_read_reg(Qmi8658Register_Revision, &qmi8658_revision_id, 1);

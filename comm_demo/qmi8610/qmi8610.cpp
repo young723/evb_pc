@@ -40,7 +40,7 @@ unsigned char qmi8610_write_reg(unsigned char reg, unsigned char value)
 
 	while((!ret) && (retry++ < 5))
 	{
-		if(get_i2c_spi_protocol() == USB_SPI)
+		if(get_device_protocol() == USB_SPI)
 		{
 			ret = spi_write_reg(reg&0x3f, value);
 		}
@@ -71,7 +71,7 @@ unsigned char qmi8610_read_reg(unsigned char reg, unsigned char* buf, unsigned s
 
 	while((!ret) && (retry++ < 5))
 	{
-		if(get_i2c_spi_protocol() == USB_SPI)
+		if(get_device_protocol() == USB_SPI)
 		{
 			if(len > 1)
 				reg |= 0xc0;

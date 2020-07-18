@@ -1,7 +1,7 @@
 #ifndef QMI8610_H
 #define QMI8610_H
 
-#include "i2c_spi.h"
+#include "usb_device.h"
 #include <string.h>
 #include <stdio.h>
 #include "conio.h"
