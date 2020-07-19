@@ -938,6 +938,11 @@ void Ccomm_demoDlg::OnBnClickedBtStart()
 				sensor_type |= QST_SENSOR_PRESS;
 				press_type = QST_PRESS_QMP6988;
 			}
+			else if(bmp280_init())
+			{
+				sensor_type |= QST_SENSOR_PRESS;
+				press_type = QST_PRESS_BMP280;
+			}
 			else
 			{
 				press_type = QST_PRESS_NONE;
@@ -949,7 +954,9 @@ void Ccomm_demoDlg::OnBnClickedBtStart()
 			accgyro_type = QST_ACCGYRO_NONE;
 			if(accgyro_type == QST_ACCGYRO_NONE)
 			{
-				spi_config(4*1000*1000, 3);
+				if(protocol_type == USB_SPI)
+					spi_config(4*1000*1000, 3);
+
 				if(qmi8610_init())
 				{
 					sensor_type |= QST_SENSOR_ACCGYRO;
@@ -963,11 +970,15 @@ void Ccomm_demoDlg::OnBnClickedBtStart()
 			}
 			if(accgyro_type == QST_ACCGYRO_NONE)
 			{
-				spi_config(4*1000*1000, 0);
 				if(bmi160_init())
 				{
 					sensor_type |= QST_SENSOR_ACCGYRO;
 					accgyro_type = QST_ACCGYRO_BMI160;
+				}
+				else if(mpu6050_init())
+				{
+					sensor_type |= QST_SENSOR_ACCGYRO;
+					accgyro_type = QST_ACCGYRO_MPU6050;
 				}
 			}
 
@@ -1093,7 +1104,10 @@ void Ccomm_demoDlg::OnTimer(UINT_PTR nIDEvent)
 				qmp6988_calc_pressure(&qmp6988, &sensor_data[1], &sensor_data[0]);
 				sensor_data[2] = ExeBtwzFilter(sensor_data[0]);				
 				line_set |= QST_LINE3_ENABLE;
-				//QST_PRINTF("%f	%f\n", sensor_data[0], sensor_data[1]);
+			}
+			else if(press_type == QST_PRESS_BMP280)
+			{
+				bmp280_calc_press(&sensor_data[0], &sensor_data[1]);
 			}
 		}
 #endif
@@ -1111,6 +1125,10 @@ void Ccomm_demoDlg::OnTimer(UINT_PTR nIDEvent)
 			else if(accgyro_type == QST_ACCGYRO_BMI160)
 			{
 				bmi160_read_xyz(&sensor_data[0], &sensor_data[6]);
+			}
+			else if(accgyro_type == QST_ACCGYRO_MPU6050)
+			{
+				mpu6050_read_data(&sensor_data[0], &sensor_data[6], &sensor_data[10]);
 			}
 		}
 #endif

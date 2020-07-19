@@ -1,6 +1,11 @@
 #ifndef BMP280_H
 #define BMP280_H
 
+#include "usb_device.h"
+#include <string.h>
+#include <stdio.h>
+#include "conio.h"
+
 // bmp280
 #define BMP280_U16_t unsigned short
 #define BMP280_S16_t short
@@ -8,6 +13,14 @@
 #define BMP280_S32_t int
 #define BMP280_U64_t unsigned long long
 #define BMP280_S64_t long long
+
+#define SHIFT_RIGHT_4_POSITION				 4
+#define SHIFT_LEFT_2_POSITION                2
+#define SHIFT_LEFT_4_POSITION                4
+#define SHIFT_LEFT_5_POSITION                5
+#define SHIFT_LEFT_8_POSITION                8
+#define SHIFT_LEFT_12_POSITION               12
+#define SHIFT_LEFT_16_POSITION               16
 
 #define BMP280_CALIBRATION_DATA_START		0x88 /* BMP280_DIG_T1_LSB_REG */
 #define BMP280_CALIBRATION_DATA_LENGTH		24
@@ -52,5 +65,7 @@ struct bmp280_calibration_data {
 };
 
 // bmp280
+int bmp280_init(void);
+void bmp280_calc_press(float *pressure, float *tempearture);
 
 #endif

@@ -80,7 +80,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>.\qmc5883l;.\qmc6308;.\bmi160;.\qmi8658;.\qmcX983;.\qmi8610;.\qmp6988;.\qma6100;.\lis3dh;.\qmaX981;.\ChartCtrl;.\Filter;.\usb_device;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\qmc5883l;.\mpu6050;.\qmc6308;.\bmi160;.\qmi8658;.\qmcX983;.\qmi8610;.\bmp280;.\qmp6988;.\qma6100;.\lis3dh;.\qmaX981;.\ChartCtrl;.\Filter;.\usb_device;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -92,8 +92,9 @@
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>USB2UARTSPIIICDLL.lib;USBIOX.LIB;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>./usb_device/USB2UARTSPIIICDLL.lib;./usb_device/USBIOX.LIB;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
+      <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
@@ -116,7 +117,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>./;./Filter;./ChartCtrl;./qmi8658;./bmi160;./qmi8610;./qma6100;./qmaX981;./lis3dh;./qmc6308;./qmc5883l;./qmp6988;./qmcX983;./usb_device;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;./Filter;./bmp280;./mpu6050;./ChartCtrl;./qmi8658;./bmi160;./qmi8610;./qma6100;./qmaX981;./lis3dh;./qmc6308;./qmc5883l;./qmp6988;./qmcX983;./usb_device;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -130,13 +131,14 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalLibraryDirectories>D:\code\evb\comm_demo\comm_demo;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>USBIOX.LIB;USB2UARTSPIIICDLL.lib;uafxcw.lib;libcmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>./usb_device/USBIOX.LIB;./usb_device/USB2UARTSPIIICDLL.lib;uafxcw.lib;libcmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bmi160\bmi160.cpp" />
+    <ClCompile Include="bmp280\bmp280.cpp" />
     <ClCompile Include="cali_3d\ical.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -168,6 +170,7 @@
     <ClCompile Include="comm_demoDlg.cpp" />
     <ClCompile Include="Filter\MyFilter.cpp" />
     <ClCompile Include="lis3dh\lis3dh.cpp" />
+    <ClCompile Include="mpu6050\mpu6050.cpp" />
     <ClCompile Include="qma6100\qma6100.cpp" />
     <ClCompile Include="qmaX981\qmaX981.cpp" />
     <ClCompile Include="qmc5883l\qmc5883.cpp" />
@@ -184,6 +187,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bmi160\bmi160.h" />
+    <ClInclude Include="bmp280\bmp280.h" />
     <ClInclude Include="ChartCtrl\ChartAxis.h" />
     <ClInclude Include="ChartCtrl\ChartAxisLabel.h" />
     <ClInclude Include="ChartCtrl\ChartBalloonLabel.h" />
@@ -219,6 +223,7 @@
     <ClInclude Include="comm_demoDlg.h" />
     <ClInclude Include="Filter\MyFilter.h" />
     <ClInclude Include="lis3dh\lis3dh.h" />
+    <ClInclude Include="mpu6050\mpu6050.h" />
     <ClInclude Include="qma6100\qma6100.h" />
     <ClInclude Include="qmaX981\qmaX981.h" />
     <ClInclude Include="qmc5883l\qmc5883.h" />
@@ -230,8 +235,8 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="USB2UARTSPIIICDLL.h" />
-    <ClInclude Include="USBIOX.H" />
+    <ClInclude Include="usb_device\USB2UARTSPIIICDLL.h" />
+    <ClInclude Include="usb_device\USBIOX.H" />
     <ClInclude Include="usb_device\usb_device.h" />
   </ItemGroup>
   <ItemGroup>
@@ -243,12 +248,19 @@
     <None Include="res\comm_demo.rc2" />
     <None Include="ReadMe.txt" />
     <None Include="res\qstevb.rc2" />
+    <None Include="usb_device\lmusbdll.dll" />
+    <None Include="usb_device\USB2UARTSPIIICDLL.dll" />
+    <None Include="usb_device\USBIOX.DLL" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="comm_demo.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\qstevb.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="usb_device\USB2UARTSPIIICDLL.lib" />
+    <Library Include="usb_device\USBIOX.LIB" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

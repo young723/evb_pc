@@ -19,16 +19,22 @@
 #include "ChartBarSerie.h"
 #include "MyFilter.h"
 #include "usb_device.h"
+// acc
 #include "qmaX981.h"
 #include "qma6100.h"
+#include "lis3dh.h"
+// mag
 #include "qmcX983.h"
 #include "qmc6308.h"
 #include "qmc5883.h"
-#include "qmp6988.h"
+// accgyro
 #include "qmi8610.h"
 #include "qmi8658.h"
 #include "bmi160.h"
-#include "lis3dh.h"
+#include "mpu6050.h"
+// press
+#include "qmp6988.h"
+#include "bmp280.h"
 
 //typedef unsigned char uint8;
 //typedef char int8;
@@ -74,8 +80,6 @@ typedef enum
 	QST_ACCEL_NONE,
 	QST_ACCEL_QMAX981,
 	QST_ACCEL_QMA6100,
-	QST_ACCEL_QMI8610,
-	QST_ACCEL_QMI8658,
 	QST_ACCEL_LIS3DH,
 
 	QST_ACCEL_TOTAL
@@ -95,8 +99,6 @@ typedef enum
 typedef enum
 {
 	QST_GYRO_NONE,
-	QST_GYRO_QMI8610,
-	QST_GYRO_QMI8658,
 
 	QST_GYRO_TOTAL
 } qst_gyro_type;
@@ -107,6 +109,7 @@ typedef enum
 	QST_ACCGYRO_QMI8610,
 	QST_ACCGYRO_QMI8658,
 	QST_ACCGYRO_BMI160,
+	QST_ACCGYRO_MPU6050,
 
 	QST_ACCGYRO_TOTAL
 } qst_accgyro_type;
@@ -115,6 +118,7 @@ typedef enum
 {
 	QST_PRESS_NONE,
 	QST_PRESS_QMP6988,
+	QST_PRESS_BMP280,
 
 	QST_PRESS_TOTAL
 } qst_press_type;
@@ -212,7 +216,7 @@ private:
 	int				mag_accuracy;
  	int			 	mComNum;
 	//sensor_vec_t	out_data;
-	float			sensor_data[10];
+	float			sensor_data[12];		// sensor_data[9]	: press   sensor_data[10]: tempearture   
 	unsigned int	step;
 
 #if defined(MAG_CALI_SUPPORT)
