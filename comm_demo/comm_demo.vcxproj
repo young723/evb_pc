@@ -80,7 +80,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>.\qmc5883l;.\mpu6050;.\qmc6308;.\bmi160;.\qmi8658;.\qmcX983;.\qmi8610;.\bmp280;.\qmp6988;.\qma6100;.\lis3dh;.\qmaX981;.\ChartCtrl;.\Filter;.\usb_device;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\qmc5883l;.\mpu6050;.\qmc6308;.\bmi160;.\qmi8658;.\qmcX983;.\qmi8610;.\bmp280;.\qmp6988;.\qma6100;.\bma25x;.\lis3dh;.\qmaX981;.\ChartCtrl;.\Filter;.\usb_device;.\algo\mag-cali;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -92,7 +92,7 @@
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>./usb_device/USB2UARTSPIIICDLL.lib;./usb_device/USBIOX.LIB;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>./usb_device/USB2UARTSPIIICDLL.lib;./usb_device/USBIOX.LIB;./algo/mag-cali/debug/mag-cali.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
@@ -117,7 +117,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>./;./Filter;./bmp280;./mpu6050;./ChartCtrl;./qmi8658;./bmi160;./qmi8610;./qma6100;./qmaX981;./lis3dh;./qmc6308;./qmc5883l;./qmp6988;./qmcX983;./usb_device;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;./Filter;./bmp280;./mpu6050;./ChartCtrl;./qmi8658;./bmi160;./qmi8610;./qma6100;./qmaX981;./bma25x;./lis3dh;./qmc6308;./qmc5883l;./qmp6988;./qmcX983;./usb_device;./algo/mag-cali;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -131,12 +131,13 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalLibraryDirectories>D:\code\evb\comm_demo\comm_demo;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>./usb_device/USBIOX.LIB;./usb_device/USB2UARTSPIIICDLL.lib;uafxcw.lib;libcmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>./usb_device/USBIOX.LIB;./usb_device/USB2UARTSPIIICDLL.lib;./algo/mag-cali/release/mag-cali.lib;uafxcw.lib;libcmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="bma25x\bma25x.cpp" />
     <ClCompile Include="bmi160\bmi160.cpp" />
     <ClCompile Include="bmp280\bmp280.cpp" />
     <ClCompile Include="ChartCtrl\ChartAxis.cpp" />
@@ -182,6 +183,7 @@
     <ClCompile Include="usb_device\usb_device.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bma25x\bma25x.h" />
     <ClInclude Include="bmi160\bmi160.h" />
     <ClInclude Include="bmp280\bmp280.h" />
     <ClInclude Include="ChartCtrl\ChartAxis.h" />

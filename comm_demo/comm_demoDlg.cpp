@@ -10,9 +10,8 @@
 #endif
 
 #if 0
-
 #if defined(MAG_CALI_SUPPORT)
-#pragma comment(lib, "mag_calibration_lib.lib")
+#pragma comment(lib, "mag_cali.lib")
 extern "C" struct mag_lib_interface_t MAG_LIB_API_INTERFACE;
 #endif
 
@@ -29,14 +28,13 @@ static int m_magR;
 static unsigned char mag_cali_flag=0;
 static short mag_ofsx=0,mag_ofsy=0,mag_ofsz=0,Mag_AvgR=0;
 #endif
-
 #endif
 
 //#ifdef _DEBUG
 #define DEBUG_CONSOLE
 //#endif
 #ifdef DEBUG_CONSOLE
-#define QST_PRINTF		_cprintf		//printf
+#define QST_PRINTF		_cprintf
 #else
 #define QST_PRINTF
 #endif
@@ -281,7 +279,7 @@ HCURSOR Ccomm_demoDlg::OnQueryDragIcon()
 
 void Ccomm_demoDlg::app_init_para(void)
 {
-	sampleRate = 50;
+	sampleRate = 16;
 	protocol_type = USB_I2C;
 	sensor_type = QST_SENSOR_NONE;
 	mChartInit = FALSE;
@@ -295,6 +293,16 @@ void Ccomm_demoDlg::app_init_para(void)
 	master_status = FALSE;
 
 	InitBtwzFilter();
+#if defined(QST_MAG_CALI_SUPPORT)
+	struct magChipInfo mag_info;
+	mag_info.deviceid = 0x80;
+	mag_info.hwGyro = 0;
+	mag_info.layout = 0;
+
+	mag_cali_p = &MAG_LIB_API_INTERFACE;
+	mag_cali_p->initLib(&mag_info);
+	mag_cali_p->enableLib(1);
+#endif
 }
 
 void Ccomm_demoDlg::app_reset_para(void)
@@ -468,7 +476,6 @@ void Ccomm_demoDlg::app_chart_init(void)
 	pLineSerie6->SetColor(RGB(0,0,0));
 	pLineSerie6->SetName(_T("line 6"));
 
-
 	memset(sensor_data, 0, sizeof(sensor_data));
 	for (int i=0; i<QST_CHART_MAX_POINT; i++)
 	{
@@ -493,6 +500,7 @@ void Ccomm_demoDlg::app_data_update(void)
 	CStatic *pRawDataEdit;
 	char str_buf[256]={0};
 
+#if !defined(CHART_REFRESH_DISABLE)
 	if(sensor_type != QST_SENSOR_NONE)
 	{
 		if(chart_index < QST_CHART_MAX_POINT)
@@ -551,6 +559,7 @@ void Ccomm_demoDlg::app_data_update(void)
 		}
 	}
 	chart_index++;
+#endif
 
 	if(QST_SENSOR_ACCEL & sensor_type)
 	{
@@ -898,7 +907,12 @@ void Ccomm_demoDlg::OnBnClickedBtStart()
 				sensor_type |= QST_SENSOR_ACCEL;
 				acc_type = QST_ACCEL_LIS3DH;
 				edit_slave = lis3dh_get_slave();
-				//device_register_irq(NULL);
+			}
+			else if(bma25x_init())
+			{
+				sensor_type |= QST_SENSOR_ACCEL;
+				acc_type = QST_ACCEL_BMA25X;
+				edit_slave = bma25x_get_slave();
 			}
 			else
 			{
@@ -930,7 +944,8 @@ void Ccomm_demoDlg::OnBnClickedBtStart()
 			}
 
 			if(mag_type > QST_MAG_NONE)
-				line_set |= (QST_LINE1_ENABLE|QST_LINE2_ENABLE|QST_LINE3_ENABLE);
+				//line_set |= (QST_LINE1_ENABLE|QST_LINE2_ENABLE|QST_LINE3_ENABLE);
+				//line_set |= (QST_LINE4_ENABLE|QST_LINE5_ENABLE|QST_LINE6_ENABLE);
 #endif
 #if defined(QST_PRESSURE_SUPPORT)
 			if(qmp6988_init(&qmp6988))
@@ -1077,6 +1092,19 @@ void Ccomm_demoDlg::OnTimer(UINT_PTR nIDEvent)
 			{
 				lis3dh_read_acc_xyz(&sensor_data[0]);
 			}
+			else if(acc_type == QST_ACCEL_BMA25X)
+			{
+				bma25x_read_xyz(&sensor_data[0]);
+			}
+#if defined(QST_MAG_CALI_SUPPORT)
+			struct magCaliDataInPut accIn;
+			accIn.status = 3;
+			accIn.timeStamp = 0;
+			accIn.x = sensor_data[0];
+			accIn.y = sensor_data[1];
+			accIn.z = sensor_data[2];
+			mag_cali_p->caliApiSetAccData(&accIn);
+#endif
 		}
 #endif
 #if defined(QST_MAGNETIC_SUPPORT)
@@ -1094,6 +1122,21 @@ void Ccomm_demoDlg::OnTimer(UINT_PTR nIDEvent)
 			{
 				Qmc5883_GetData(&sensor_data[3]);				
 			}
+#if defined(QST_MAG_CALI_SUPPORT)
+			struct magCaliDataInPut magIn;
+			struct magCaliDataOutPut magOut;
+
+			magIn.status = 0;
+			magIn.timeStamp = 0;
+			magIn.x = sensor_data[3];
+			magIn.y = sensor_data[4];
+			magIn.z = sensor_data[5];
+			mag_cali_p->doCaliApi(&magIn, &magOut);
+			sensor_data[3] = magOut.x;
+			sensor_data[4] = magOut.y;
+			sensor_data[5] = magOut.z;
+			mag_accuracy = magOut.status;
+#endif
 		}
 #endif
 #if defined(QST_PRESSURE_SUPPORT)

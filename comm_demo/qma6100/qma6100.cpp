@@ -113,7 +113,7 @@ qu8 qma6100_chip_id(void)
 	{
 		ret = qma6100_readreg(QMA6100_CHIP_ID, &chip_id, 1);
 		QMA6100_LOG("qma6100_chip_id =0x%x ret=%d\n", chip_id, ret);
-		if(retry++ > 5)
+		if(++retry >= 1)
 			break;
 	}
 

@@ -9,6 +9,7 @@
 #include <io.h>
 #include <fcntl.h> 
 #include <time.h>
+#include <math.h>
 #include "conio.h"
 
 #include "USBIOX.H"
@@ -23,6 +24,7 @@
 #include "qmaX981.h"
 #include "qma6100.h"
 #include "lis3dh.h"
+#include "bma25x.h"
 // mag
 #include "qmcX983.h"
 #include "qmc6308.h"
@@ -47,14 +49,19 @@
 #define SENSOR_TIMER_ID_2			2
 #define SENSOR_TIMER_ID_3			3
 #define QST_CHART_MAX_POINT			50		// draw chart
-#define CALI_DATA_NUM				15		// acc cali
 #define PI	3.1415926535897932f
 
-
 #define QST_ACCELEMRTER_SUPPORT
-//#define QST_MAGNETIC_SUPPORT
-#define QST_PRESSURE_SUPPORT
-#define QST_ACCGYRO_SUPPORT
+#define QST_MAGNETIC_SUPPORT
+//#define QST_MAG_CALI_SUPPORT
+//#define QST_PRESSURE_SUPPORT
+//#define QST_ACCGYRO_SUPPORT
+
+#if defined(QST_MAG_CALI_SUPPORT)
+#define CHART_REFRESH_DISABLE
+#include "mag_calibration_lib.h"
+extern "C" struct mag_lib_interface_t MAG_LIB_API_INTERFACE;
+#endif
 
 typedef struct
 {
@@ -81,6 +88,7 @@ typedef enum
 	QST_ACCEL_QMAX981,
 	QST_ACCEL_QMA6100,
 	QST_ACCEL_LIS3DH,
+	QST_ACCEL_BMA25X,
 
 	QST_ACCEL_TOTAL
 } qst_acc_type;
@@ -160,13 +168,6 @@ typedef struct
 	unsigned int step;
 } sensor_vec_t;
 
-
-#if defined(MAG_CALI_SUPPORT)
-#include "mag_calibration_lib.h"
-#endif
-#if defined(QMC_CALI_3D_SUPPORT)
-#include ".\cali_3d\Algorithm.h"
-#endif
 
 // Ccomm_demoDlg 
 class Ccomm_demoDlg : public CDialog
@@ -269,6 +270,10 @@ private:
 	CFile			log_file;
 	BOOL			log_flag;
 	// write
+#if defined(QST_MAG_CALI_SUPPORT)
+	struct mag_lib_interface_t	*mag_cali_p;
+#endif
+
  public:
 	afx_msg void OnEnChangeCommPort();
 	afx_msg BOOL OnDeviceChange(UINT nEventType, DWORD dwData);

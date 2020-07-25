@@ -93,9 +93,6 @@
     <ClCompile Include="ChartCtrl\ChartXYSerie.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="cali_3d\ical.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="qmaX981\qmaX981.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -136,6 +133,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="bmp280\bmp280.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="bma25x\bma25x.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -294,6 +294,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="bmp280\bmp280.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="bma25x\bma25x.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,10 +2,6 @@
 #include "stdafx.h"
 #include "lis3dh.h"
 
-
-#define lis3dh_printf					_cprintf
-
-
 static unsigned char lis3dh_slave_addr = 0x18;
 static unsigned short acc_lsb_div = 0;
 static unsigned short gyro_lsb_div = 0;
@@ -20,7 +16,7 @@ unsigned char lis3dh_write_reg(unsigned char reg, unsigned char value)
 	unsigned char ret=0;
 	unsigned int retry = 0;
 
-	while((!ret) && (retry++ < 5))
+	while((!ret) && (++retry < 5))
 	{
 		if(get_device_protocol() == USB_SPI)
 		{
@@ -150,7 +146,7 @@ unsigned char lis3dh_init(void)
 	{
 		lis3dh_slave_addr = lis3dh_slave[iCount];
 		retry = 0;
-		while((lis3dh_chip_id != LIS3DH_CHIP_ID)&&(retry++ < 5))
+		while((lis3dh_chip_id != LIS3DH_CHIP_ID)&&(retry++ <= 1))
 		{
 			lis3dh_read_reg(0x0f, &lis3dh_chip_id, 1);
 			lis3dh_printf("lis3dh_chip_id = 0x%x\n", lis3dh_chip_id);

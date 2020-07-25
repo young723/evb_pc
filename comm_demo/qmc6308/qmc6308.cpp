@@ -179,6 +179,7 @@ static int qmc6310_get_chipid(void)
 	{
 		return 0;
 	}
+
 	if((qmc6308_chipid == 0xff)||(qmc6308_chipid & 0x80)==0)
 	{
 		return 0;
@@ -224,8 +225,8 @@ int qmc6308_read_mag_xyz(float *data)
 	data[AXIS_Y] = (float)(g_map.sign[AXIS_Y]*hw_f[g_map.map[AXIS_Y]]);
 	data[AXIS_Z] = (float)(g_map.sign[AXIS_Z]*hw_f[g_map.map[AXIS_Z]]);
 #else
-	data[0] = hw_f[0];
-	data[1] = hw_f[1];
+	data[0] = -hw_f[0];
+	data[1] = -hw_f[1];
 	data[2] = hw_f[2];
 #endif
 	

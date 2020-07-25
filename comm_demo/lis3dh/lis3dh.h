@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include "conio.h"
 
+#define lis3dh_printf					_cprintf
+
 #define LIS3DH_CHIP_ID                   0x33
 
 #define LIS3DH_ACCEL_RANGE_2G            0x00

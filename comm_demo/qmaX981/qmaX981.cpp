@@ -114,7 +114,7 @@ qu8 qmaX981_chip_id(void)
 	{
 		qmaX981_readreg(QMAX981_CHIP_ID, &chip_id, 1);
 		QMAX981_LOG("qmaX981_chip_id id=0x%x \n", chip_id);
-		if(retry++ > 5)
+		if(++retry >= 1)
 			break;
 	}
 
